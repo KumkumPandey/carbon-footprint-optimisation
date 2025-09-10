@@ -1,6 +1,7 @@
 [build]
   publish = "."
-  command = ""
+  command = "echo 'Static site deployment'"
+  ignore = "requirements.txt"
   
 [[redirects]]
   from = "/*"

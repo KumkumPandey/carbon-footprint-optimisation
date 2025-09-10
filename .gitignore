@@ -1,0 +1,10 @@
+requirements.txt
+*.py
+*.pkl
+*.pth
+*.h5
+__pycache__/
+*.pyc
+.env
+logs/
+models/
