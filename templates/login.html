@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Carbon Footprint Optimizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 2rem; }
+        .logo h1 { color: #333; margin-bottom: 0.5rem; }
+        .logo p { color: #666; font-size: 0.9rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333; }
+        input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        input:focus { outline: none; border-color: #667eea; }
+        .btn { width: 100%; background: #667eea; color: white; padding: 0.75rem; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
+        .btn:hover { background: #5a6fd8; }
+        .register-link { text-align: center; margin-top: 1rem; }
+        .register-link a { color: #667eea; text-decoration: none; }
+        .register-link a:hover { text-decoration: underline; }
+        .flash-messages { margin-bottom: 1rem; }
+        .flash-message { padding: 0.75rem; border-radius: 5px; margin-bottom: 0.5rem; }
+        .flash-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🚛 Fleet Manager</h1>
+            <p>Carbon Footprint Optimization System</p>
+        </div>
+        
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="flash-message flash-error">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="user_id">User ID:</label>
+                <input type="text" id="user_id" name="user_id" placeholder="Enter your User ID" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            
+            <button type="submit" class="btn">Login</button>
+        </form>
+        
+        <div class="register-link">
+            <p>Owner? <a href="{{ url_for('owner_register') }}">Register Company</a> | Employee? <a href="{{ url_for('employee_register') }}">Register Here</a></p>
+            <p><a href="{{ url_for('home') }}">← Back to Home</a></p>
+        </div>
+    </div>
+</body>
+</html>

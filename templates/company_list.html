@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Companies - Carbon Footprint Optimizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .companies-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
+        .company-card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .company-card:hover { transform: translateY(-5px); }
+        .company-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .company-id { background: #667eea; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .company-name { font-size: 1.3rem; font-weight: bold; color: #333; margin-bottom: 0.5rem; }
+        .owner-name { color: #666; margin-bottom: 1rem; }
+        .company-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+        .stat { text-align: center; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; }
+        .stat-number { font-size: 1.2rem; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 0.8rem; color: #666; }
+        .created-date { font-size: 0.8rem; color: #999; }
+        .back-link { text-align: center; margin-bottom: 2rem; }
+        .back-link a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; }
+        .back-link a:hover { background: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>All Registered Companies</h1>
+            <p>Multi-Tenant Logistics Management System</p>
+        </div>
+        
+        <div class="back-link">
+            <a href="{{ url_for('login') }}">Back to Login</a>
+        </div>
+        
+        <div class="companies-grid">
+            {% for company in companies %}
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-id">{{ company.company_id }}</div>
+                    <div class="created-date">{{ company.created_at[:10] if company.created_at else 'N/A' }}</div>
+                </div>
+                
+                <div class="company-name">{{ company.company_name }}</div>
+                <div class="owner-name">Owner: {{ company.owner_name }}</div>
+                
+                <div class="company-stats">
+                    <div class="stat">
+                        <div class="stat-number">Active</div>
+                        <div class="stat-label">Status</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">{{ company.database_file }}</div>
+                        <div class="stat-label">Database</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="grid-column: 1 / -1; text-align: center; color: white; padding: 2rem;">
+                <h3>No companies registered yet</h3>
+                <p>Be the first to register your company!</p>
+                <a href="{{ url_for('register') }}" style="display: inline-block; margin-top: 1rem; background: white; color: #667eea; padding: 0.8rem 1.5rem; border-radius: 25px; text-decoration: none; font-weight: 600;">Register Company</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

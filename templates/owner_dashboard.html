@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - Fleet Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-common.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .header-left { display: flex; align-items: center; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; }
+        .logo-icon { font-size: 2.5rem; background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 0.5rem; border-radius: 50%; }
+        .logo-text h2 { font-size: 1.5rem; margin: 0; }
+        .logo-text p { font-size: 0.9rem; margin: 0; opacity: 0.8; }
+        .header-right { display: flex; align-items: center; gap: 1rem; }
+        .welcome-text { font-size: 1.1rem; font-weight: 600; }
+        .mobile-menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); animation: shine 3s infinite; }
+        .header h1 { font-size: 1.8rem; font-weight: 600; text-align: center; flex: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        @keyframes shine { 0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); } 100% { transform: translateX(100%) translateY(100%) rotate(45deg); } }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; margin-left: 280px; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #2c3e50, #34495e); color: white; padding: 2rem 1rem; overflow-y: auto; z-index: 1000; }
+        .profile-section { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .profile-pic { width: 80px; height: 80px; border-radius: 50%; background: #e74c3c; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; cursor: pointer; }
+        .nav-item { padding: 0.8rem; margin: 0.5rem 0; border-radius: 12px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; border: 1px solid transparent; }
+        .nav-item:hover { background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); transform: translateX(8px) scale(1.02); border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .nav-item.active { background: linear-gradient(135deg, #e74c3c, #c0392b); transform: translateX(5px); box-shadow: 0 4px 20px rgba(231,76,60,0.3); border-color: rgba(255,255,255,0.3); }
+        .nav-item::before { content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .nav-item:hover::before { left: 100%; }
+        .nav-item i { margin-right: 0.5rem; font-size: 1.1rem; }
+        .company-info { background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002; }
+        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 15px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .section { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 2rem; transition: transform 0.3s ease; }
+        .section:hover { transform: translateY(-5px); }
+        .section h3 { margin-bottom: 1.5rem; color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 0.5rem; font-size: 1.3rem; }
+        .customer-card, .truck-card { background: #f8f9fa; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; border-left: 4px solid #3498db; }
+        .status-active { border-left-color: #27ae60; }
+        .status-inactive { border-left-color: #e74c3c; }
+        .btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 25px; cursor: pointer; font-size: 0.9rem; margin: 0.2rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(231,76,60,0.3); position: relative; overflow: hidden; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(231,76,60,0.4); }
+        .btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: rgba(255,255,255,0.3); border-radius: 50%; transition: width 0.3s, height 0.3s; transform: translate(-50%, -50%); }
+        .btn:active::before { width: 300px; height: 300px; }
+        .btn-small { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+        .logout-btn { background: #e74c3c; }
+        .logout-btn:hover { background: #c0392b; }
+        .map-container { height: 500px; width: 100%; border-radius: 20px; overflow: hidden; margin-top: 1rem; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .fleet-map { grid-column: 1 / -1; }
+        .verified { color: #27ae60; font-weight: bold; }
+        .not-verified { color: #e74c3c; }
+        @media (max-width: 768px) { 
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: row; padding: 1rem; }
+            .header-left .logo-text h2 { font-size: 1.2rem; }
+            .header-left .logo-text p { display: none; }
+            .header-right { gap: 0.5rem; }
+            .welcome-text { display: none; }
+            .mobile-menu-btn { display: block; }
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .container { margin-left: 0; padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="profile-section">
+            <div class="profile-pic" onclick="openModal('ownerProfileModal')">👨‍💼</div>
+            <h4 id="ownerName">Owner Name</h4>
+            <p style="font-size: 0.8rem; opacity: 0.8;">ID: <span id="ownerId">OWN-001</span></p>
+        </div>
+        
+        <div class="nav-item active" onclick="showSection('dashboard')">
+            <i>🏠</i> Dashboard
+        </div>
+        <div class="nav-item" onclick="openModal('employeeRegModal')">
+            <i>👥</i> Register Employee
+        </div>
+        <div class="nav-item" onclick="openModal('companyModal')">
+            <i>🏢</i> Company Details
+        </div>
+        <div class="nav-item" onclick="openModal('documentsModal')">
+            <i>📄</i> Documents
+        </div>
+        <div class="nav-item" onclick="openModal('ownerProfileModal')">
+            <i>👤</i> Profile
+        </div>
+        <div class="nav-item" onclick="openModal('analyticsModal')">
+            <i>📊</i> Analytics
+        </div>
+        
+        <div class="company-info">
+            <h5>🏢 Company Info</h5>
+            <p id="companyName">ABC Logistics Pvt Ltd</p>
+            <p style="font-size: 0.8rem; opacity: 0.8;">Est. <span id="companyYear">2020</span></p>
+            <p style="font-size: 0.8rem; opacity: 0.8;">Employees: <span id="totalEmployees">0</span></p>
+        </div>
+    </div>
+    
+    <div class="header">
+        <div class="header-left">
+            <div class="logo-section">
+                <div class="logo-icon">🌱</div>
+                <div class="logo-text">
+                    <h2>Smart Carbon Footprint Optimizer</h2>
+                    <p>AI-powered logistics management system</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="welcome-text">Welcome, Owner</span>
+            <button class="btn logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 20px; margin-bottom: 2rem; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            <h2 style="color: #2c3e50; margin-bottom: 1rem; font-size: 2rem;">🌟 Welcome to Smart Carbon Footprint Optimizer</h2>
+            <p style="color: #666; font-size: 1.1rem; line-height: 1.6; max-width: 800px; margin: 0 auto;">Revolutionary AI-powered logistics management system that reduces carbon emissions while optimizing your supply chain operations. Monitor your fleet, track performance, and make data-driven decisions for a sustainable future.</p>
+        </div>
+        
+        <!-- Performance Metrics Summary -->
+        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div class="metric-card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+                <h4>🚛 Total Trips</h4>
+                <div class="metric-value" id="totalTrips" style="font-size: 2rem; font-weight: bold;">0</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+                <h4>🌱 Carbon Saved</h4>
+                <div class="metric-value" id="totalCarbonSaved" style="font-size: 2rem; font-weight: bold;">0 kg</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+                <h4>⚡ Avg Efficiency</h4>
+                <div class="metric-value" id="avgEfficiency" style="font-size: 2rem; font-weight: bold;">0%</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;">
+                <h4>🚨 Alerts</h4>
+                <div class="metric-value" id="activeAlerts" style="font-size: 2rem; font-weight: bold;">0</div>
+            </div>
+        </div>
+        
+        <!-- Live GPS Tracking Map -->
+        <div class="section" style="margin-bottom: 2rem;">
+            <h3>🗺️ Live GPS Fleet Tracking</h3>
+            <div id="liveGPSMap" style="height: 500px; border-radius: 15px; overflow: hidden;"></div>
+        </div>
+        
+        <!-- Analytics Dashboard -->
+        <div class="dashboard-grid">
+            <div class="section">
+                <h3>📊 Performance Analytics</h3>
+                <canvas id="carbonTrendChart" width="400" height="200"></canvas>
+            </div>
+            <div class="section">
+                <h3>⛽ Fuel Consumption</h3>
+                <canvas id="fuelChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="section">
+                <h3>🌤️ Weather Impact Analysis</h3>
+                <canvas id="weatherImpactChart" width="400" height="200"></canvas>
+            </div>
+            <div class="section">
+                <h3>🚦 Traffic Impact Analysis</h3>
+                <canvas id="trafficImpactChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="section">
+                <h3>📈 Live Employee Tracking</h3>
+                <div id="employeeTracking">Loading employee data...</div>
+            </div>
+            
+            <div class="section">
+                <h3>🔧 Predictive Maintenance</h3>
+                <div id="maintenanceAlerts">Loading maintenance data...</div>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="section">
+                <h3>💰 Dynamic Pricing & Quote Generation</h3>
+                <div id="pricingSection">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <select id="priceOrigin" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="Delhi">Delhi</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Chennai">Chennai</option>
+                        </select>
+                        <select id="priceDestination" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Pune">Pune</option>
+                        </select>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="number" id="priceWeight" placeholder="Load Weight (kg)" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                        <select id="urgencyLevel" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="normal">Normal Delivery</option>
+                            <option value="express">Express Delivery</option>
+                            <option value="urgent">Urgent Delivery</option>
+                        </select>
+                    </div>
+                    <button onclick="generateAdvancedQuote()" style="background: #27ae60; color: white; border: none; padding: 0.8rem 2rem; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600;">💰 Generate Smart Quote</button>
+                    <div id="quoteResult"></div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>🚨 Emergency Management</h3>
+                <div id="emergencyAlerts">Loading emergency status...</div>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="section">
+                <h3>🚛 Fleet Status</h3>
+                <div id="trucksList">Loading trucks...</div>
+            </div>
+            
+            <div class="section">
+                <h3>📅 Efficiency Breakdown</h3>
+                <canvas id="efficiencyChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="section">
+                <h3>👥 Customer Management</h3>
+                <div id="customersList">Loading customers...</div>
+            </div>
+            
+            <div class="section">
+                <h3>📅 Today's Dispatches</h3>
+                <div id="dispatchList">Loading dispatches...</div>
+            </div>
+        </div>
+        
+        <div class="section fleet-map">
+            <h3>🗺️ Live Employee Tracking Map</h3>
+            <p style="margin-bottom: 1rem; color: #7f8c8d; font-size: 0.9rem;">Track all employees or search by Employee ID for specific tracking</p>
+            <div id="fleetMap" class="map-container"></div>
+        </div>
+    </div>
+    
+    <!-- AI Chat Button -->
+    <div class="ai-chat" onclick="openModal('aiModal')" title="AI Assistant" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, #e74c3c, #c0392b); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1001; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: pulse 2s infinite;">
+        🤖
+    </div>
+    
+    <style>
+        @keyframes pulse { 0%, 100% { box-shadow: 0 4px 20px rgba(231,76,60,0.3); } 50% { box-shadow: 0 4px 30px rgba(231,76,60,0.6), 0 0 0 10px rgba(231,76,60,0.1); } }
+        .ai-chat:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 8px 30px rgba(231,76,60,0.4); }
+        .ai-chat:active { transform: scale(0.95); }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/js/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="{{ url_for('static', filename='js/dashboard-common.js') }}"></script>
+    
+    <script>
+        let map, trucks = [], charts = {};
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPerformanceMetrics();
+            initLiveGPSMap();
+            loadAnalyticsCharts();
+            loadCustomers();
+            loadTrucks();
+            loadOwnerProfile();
+            loadEmployeeCount();
+            loadEmployeeTracking();
+            loadDispatches();
+            loadMaintenanceAlerts();
+            loadEmergencyAlerts();
+            
+            // Auto refresh every 30 seconds
+            setInterval(() => {
+                loadEmployeeTracking();
+                loadDispatches();
+                loadMaintenanceAlerts();
+                loadEmergencyAlerts();
+                updateLiveGPSMap();
+                updatePerformanceMetrics();
+            }, 30000);
+        });
+        
+        // Load owner profile
+        function loadOwnerProfile() {
+            const profile = JSON.parse(localStorage.getItem('ownerProfile') || '{}');
+            document.getElementById('ownerName').textContent = profile.name || 'Owner Name';
+            document.getElementById('ownerId').textContent = profile.id || 'OWN-001';
+            document.getElementById('companyName').textContent = profile.company || 'ABC Logistics Pvt Ltd';
+            document.getElementById('companyYear').textContent = profile.year || '2020';
+        }
+        
+        // Load employee count
+        function loadEmployeeCount() {
+            const employees = JSON.parse(localStorage.getItem('registeredEmployees') || '[]');
+            document.getElementById('totalEmployees').textContent = employees.length;
+        }
+        
+        // Load employee tracking data
+        function loadEmployeeTracking() {
+            // Simulate employee tracking data
+            const trackingData = [
+                {
+                    empId: 'EMP-001',
+                    name: 'Raj Kumar',
+                    vehicle: 'DL-01-1234',
+                    route: 'Delhi → Mumbai',
+                    distance: '1,400 km',
+                    startTime: '06:30 AM',
+                    currentLocation: 'Gurgaon',
+                    status: 'In Transit',
+                    progress: 15,
+                    estimatedArrival: '11:30 PM'
+                },
+                {
+                    empId: 'EMP-002',
+                    name: 'Amit Singh',
+                    vehicle: 'MH-02-5678',
+                    route: 'Mumbai → Pune',
+                    distance: '150 km',
+                    startTime: '08:00 AM',
+                    currentLocation: 'Lonavala',
+                    status: 'In Transit',
+                    progress: 65,
+                    estimatedArrival: '12:00 PM'
+                },
+                {
+                    empId: 'EMP-003',
+                    name: 'Suresh Reddy',
+                    vehicle: 'KA-03-9012',
+                    route: 'Bangalore → Chennai',
+                    distance: '350 km',
+                    startTime: '05:45 AM',
+                    currentLocation: 'Hosur',
+                    status: 'In Transit',
+                    progress: 25,
+                    estimatedArrival: '02:30 PM'
+                }
+            ];
+            
+            const html = trackingData.map(emp => `
+                <div style="background: #f8f9fa; padding: 1.5rem; margin-bottom: 1rem; border-radius: 12px; border-left: 4px solid ${emp.status === 'In Transit' ? '#27ae60' : '#e74c3c'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h5 style="color: #2c3e50;">👨‍💼 ${emp.name} (${emp.empId})</h5>
+                        <span style="background: ${emp.status === 'In Transit' ? '#27ae60' : '#e74c3c'}; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">${emp.status}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <p><strong>🚛 Vehicle:</strong> ${emp.vehicle}</p>
+                            <p><strong>🗺️ Route:</strong> ${emp.route}</p>
+                            <p><strong>📏 Distance:</strong> ${emp.distance}</p>
+                        </div>
+                        <div>
+                            <p><strong>⏰ Start Time:</strong> ${emp.startTime}</p>
+                            <p><strong>📍 Current:</strong> ${emp.currentLocation}</p>
+                            <p><strong>🏁 ETA:</strong> ${emp.estimatedArrival}</p>
+                        </div>
+                    </div>
+                    <div style="background: #ecf0f1; border-radius: 10px; padding: 0.5rem; margin-bottom: 0.5rem;">
+                        <div style="background: #27ae60; height: 8px; border-radius: 4px; width: ${emp.progress}%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <p style="text-align: center; font-size: 0.9rem; color: #7f8c8d;">Progress: ${emp.progress}% Complete</p>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button onclick="trackEmployee('${emp.empId}')" class="btn btn-small" style="margin: 0.2rem;">🗺️ Track Live</button>
+                        <button onclick="contactEmployee('${emp.empId}')" class="btn btn-small" style="background: #3498db; margin: 0.2rem;">📞 Contact</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('employeeTracking').innerHTML = html || 'No employees on route today';
+        }
+        
+        // Load dispatch data
+        function loadDispatches() {
+            const dispatches = [
+                {
+                    id: 'DISP-001',
+                    employee: 'Raj Kumar',
+                    customer: 'ABC Corp',
+                    route: 'Delhi → Mumbai',
+                    dispatchTime: '06:30 AM',
+                    carbonFootprint: '245.6 kg CO₂',
+                    fuelEstimate: '180 L',
+                    priority: 'High'
+                },
+                {
+                    id: 'DISP-002',
+                    employee: 'Amit Singh',
+                    customer: 'XYZ Ltd',
+                    route: 'Mumbai → Pune',
+                    dispatchTime: '08:00 AM',
+                    carbonFootprint: '45.2 kg CO₂',
+                    fuelEstimate: '25 L',
+                    priority: 'Medium'
+                }
+            ];
+            
+            const html = dispatches.map(dispatch => `
+                <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; border-left: 4px solid ${dispatch.priority === 'High' ? '#e74c3c' : '#f39c12'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h6>${dispatch.id}</h6>
+                        <span style="background: ${dispatch.priority === 'High' ? '#e74c3c' : '#f39c12'}; color: white; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.7rem;">${dispatch.priority}</span>
+                    </div>
+                    <p><strong>Employee:</strong> ${dispatch.employee}</p>
+                    <p><strong>Customer:</strong> ${dispatch.customer}</p>
+                    <p><strong>Route:</strong> ${dispatch.route}</p>
+                    <p><strong>Time:</strong> ${dispatch.dispatchTime}</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem;">
+                        <div style="background: #e8f5e8; padding: 0.3rem; border-radius: 4px; text-align: center;">
+                            <strong>🌱 ${dispatch.carbonFootprint}</strong>
+                        </div>
+                        <div style="background: #fff3cd; padding: 0.3rem; border-radius: 4px; text-align: center;">
+                            <strong>⛽ ${dispatch.fuelEstimate}</strong>
+                        </div>
+                    </div>
+                </div>iority === 'High' ? '#e74c3c' : '#f39c12'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h6>${dispatch.id}</h6>
+                        <span style="background: ${dispatch.priority === 'High' ? '#e74c3c' : '#f39c12'}; color: white; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.7rem;">${dispatch.priority}</span>
+                    </div>
+                    <p><strong>Employee:</strong> ${dispatch.employee}</p>
+                    <p><strong>Customer:</strong> ${dispatch.customer}</p>
+                    <p><strong>Route:</strong> ${dispatch.route}</p>
+                    <p><strong>Time:</strong> ${dispatch.dispatchTime}</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem;">
+                        <div style="background: #e8f5e8; padding: 0.3rem; border-radius: 4px; text-align: center;">
+                            <strong>🌱 ${dispatch.carbonFootprint}</strong>
+                        </div>
+                        <div style="background: #fff3cd; padding: 0.3rem; border-radius: 4px; text-align: center;">
+                            <strong>⛽ ${dispatch.fuelEstimate}</strong>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('dispatchList').innerHTML = html || 'No dispatches today';
+        }
+        
+        // Track employee function
+        function trackEmployee(empId) {
+            alert(`Tracking employee ${empId} in real-time...\n\nThis will open live GPS tracking in production.`);
+        }
+        
+        // Contact employee function
+        function contactEmployee(empId) {
+            const phone = '+91-9876543210';
+            if (confirm(`Contact employee ${empId} at ${phone}?`)) {
+                window.open(`tel:${phone}`);
+            }
+        }
+
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                const customers = await response.json();
+                displayCustomers(customers);
+            } catch (error) {
+                document.getElementById('customersList').innerHTML = 'Error loading customers';
+            }
+        }
+
+        async function loadTrucks() {
+            try {
+                const response = await fetch('/api/trucks');
+                trucks = await response.json();
+                displayTrucks(trucks);
+                initFleetMap();
+            } catch (error) {
+                document.getElementById('trucksList').innerHTML = 'Error loading trucks';
+            }
+        }
+
+        function displayCustomers(customers) {
+            const html = customers.map(customer => `
+                <div class="customer-card">
+                    <strong>${customer.name}</strong><br>
+                    <small>Email: ${customer.email}</small><br>
+                    <small>Phone: ${customer.phone}</small><br>
+                    <span class="${customer.photo_verified ? 'verified' : 'not-verified'}">
+                        ${customer.photo_verified ? '✓ Verified' : '✗ Not Verified'}
+                    </span>
+                </div>
+            `).join('');
+            document.getElementById('customersList').innerHTML = html || 'No customers found';
+        }
+
+        function displayTrucks(trucks) {
+            const html = trucks.map(truck => `
+                <div class="truck-card ${truck.status === 'Active' ? 'status-active' : 'status-inactive'}">
+                    <strong>${truck.truck_number}</strong> - ${truck.driver_name}<br>
+                    <small>From: ${truck.current_location || 'N/A'}</small><br>
+                    <small>To: ${truck.destination || 'N/A'}</small><br>
+                    <small>Status: ${truck.status}</small>
+                    <button class="btn btn-small" onclick="trackTruck(${truck.id})">Track</button>
+                </div>
+            `).join('');
+            document.getElementById('trucksList').innerHTML = html || 'No trucks dispatched today';
+        }
+
+        function trackTruck(truckId) {
+            const truck = trucks.find(t => t.id === truckId);
+            if (truck && map) {
+                map.setCenter({lat: truck.lat, lng: truck.lng});
+                map.setZoom(12);
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        }
+    </script>
+
+
+    
+    <script>
+        const employeeLocations = {
+            'EMP-001': {lat: 28.4595, lng: 77.0266, name: 'Raj Kumar', vehicle: 'DL-01-1234', status: 'In Transit', location: 'Gurgaon'},
+            'EMP-002': {lat: 18.9068, lng: 73.3430, name: 'Amit Singh', vehicle: 'MH-02-5678', status: 'In Transit', location: 'Lonavala'},
+            'EMP-003': {lat: 12.8406, lng: 77.6602, name: 'Suresh Reddy', vehicle: 'KA-03-9012', status: 'In Transit', location: 'Hosur'}
+        };
+        
+        function initFleetMap() {
+            const mapContainer = document.getElementById('fleetMap');
+            mapContainer.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 2rem; border-radius: 20px;">
+                    <h3 style="margin-bottom: 2rem;">🗺️ Employee Tracking Map</h3>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px; backdrop-filter: blur(10px); margin-bottom: 2rem; width: 90%;">
+                        <div style="margin-bottom: 1rem;">
+                            <input type="text" id="employeeIdInput" placeholder="Enter Employee ID (e.g., EMP-001)" style="padding: 0.8rem; border: none; border-radius: 8px; width: 250px; margin-right: 10px;">
+                            <button onclick="trackSpecificEmployee()" style="background: #e74c3c; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">🔍 Track Employee</button>
+                        </div>
+                        <div>
+                            <button onclick="showAllEmployees()" style="background: #27ae60; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; margin: 0.3rem; cursor: pointer;">👥 Show All</button>
+                            <button onclick="clearMap()" style="background: #95a5a6; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; margin: 0.3rem; cursor: pointer;">🗑️ Clear</button>
+                        </div>
+                    </div>
+                    
+                    <div id="employeeMapData" style="width: 100%; max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            `;
+            
+            showAllEmployees();
+        }
+        
+        function showAllEmployees() {
+            const mapData = document.getElementById('employeeMapData');
+            let html = '<h4 style="margin-bottom: 1rem;">📍 All Active Employees</h4><div style="display: grid; gap: 1rem;">';
+            
+            Object.keys(employeeLocations).forEach(empId => {
+                const emp = employeeLocations[empId];
+                html += createEmployeeCard(empId, emp);
+            });
+            
+            html += '</div>';
+            mapData.innerHTML = html;
+        }
+        
+        function trackSpecificEmployee() {
+            const empId = document.getElementById('employeeIdInput').value.trim().toUpperCase();
+            
+            if (!empId) {
+                alert('Please enter an Employee ID');
+                return;
+            }
+            
+            if (!employeeLocations[empId]) {
+                alert(`Employee ${empId} not found or not currently on route`);
+                return;
+            }
+            
+            const emp = employeeLocations[empId];
+            const mapData = document.getElementById('employeeMapData');
+            mapData.innerHTML = `
+                <h4 style="margin-bottom: 1rem;">🎯 Tracking: ${empId}</h4>
+                ${createEmployeeCard(empId, emp)}
+            `;
+            
+            document.getElementById('employeeIdInput').value = '';
+        }
+        
+        function createEmployeeCard(empId, emp) {
+            return `
+                <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h5>${emp.name} (${empId})</h5>
+                        <span style="background: ${emp.status === 'In Transit' ? '#27ae60' : '#e74c3c'}; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">${emp.status}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <p><strong>🚛 Vehicle:</strong> ${emp.vehicle}</p>
+                            <p><strong>📍 Location:</strong> ${emp.location}</p>
+                        </div>
+                        <div>
+                            <p><strong>🌍 Coordinates:</strong></p>
+                            <p>Lat: ${emp.lat.toFixed(4)}</p>
+                            <p>Lng: ${emp.lng.toFixed(4)}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="openGoogleMaps(${emp.lat}, ${emp.lng})" style="background: #4285f4; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🗺️ Google Maps</button>
+                        <button onclick="contactEmployee('${empId}')" style="background: #34a853; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📞 Contact</button>
+                        <button onclick="getDirections(${emp.lat}, ${emp.lng})" style="background: #fbbc04; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📍 Directions</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function clearMap() {
+            document.getElementById('employeeMapData').innerHTML = '<p style="opacity: 0.8;">Map cleared. Use "Show All" to display employees.</p>';
+        }
+        
+        function openGoogleMaps(lat, lng) {
+            const url = `https://www.google.com/maps/@${lat},${lng},15z`;
+            window.open(url, '_blank');
+        }
+        
+        function getDirections(lat, lng) {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+            window.open(url, '_blank');
+        }
+        
+        // Load maintenance alerts
+        function loadMaintenanceAlerts() {
+            const maintenanceData = [
+                {
+                    vehicle: 'DL-01-1234',
+                    component: 'Engine Oil',
+                    urgency: 'Critical',
+                    remaining_km: 200,
+                    health_score: 25,
+                    cost: 2500
+                },
+                {
+                    vehicle: 'MH-02-5678',
+                    component: 'Brake Pads',
+                    urgency: 'High',
+                    remaining_km: 800,
+                    health_score: 65,
+                    cost: 8000
+                }
+            ];
+            
+            const html = maintenanceData.map(item => `
+                <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; border-left: 4px solid ${item.urgency === 'Critical' ? '#e74c3c' : '#f39c12'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h6>${item.vehicle}</h6>
+                        <span style="background: ${item.urgency === 'Critical' ? '#e74c3c' : '#f39c12'}; color: white; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.7rem;">${item.urgency}</span>
+                    </div>
+                    <p><strong>Component:</strong> ${item.component}</p>
+                    <p><strong>Remaining:</strong> ${item.remaining_km} km</p>
+                    <p><strong>Health Score:</strong> ${item.health_score}%</p>
+                    <p><strong>Est. Cost:</strong> ₹${item.cost}</p>
+                    <button onclick="scheduleService('${item.vehicle}', '${item.component}')" style="background: #3498db; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem; font-size: 0.8rem;">📅 Schedule Service</button>
+                </div>
+            `).join('');
+            
+            document.getElementById('maintenanceAlerts').innerHTML = html;
+        }
+        
+        // Performance Metrics
+        async function loadPerformanceMetrics() {
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+                
+                document.getElementById('totalTrips').textContent = data.total_trips || 0;
+                document.getElementById('totalCarbonSaved').textContent = `${data.total_carbon_saved || 0} kg`;
+                document.getElementById('avgEfficiency').textContent = `${data.average_efficiency || 0}%`;
+                document.getElementById('activeAlerts').textContent = data.active_alerts || 0;
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+            }
+        }
+        
+        function updatePerformanceMetrics() {
+            loadPerformanceMetrics();
+        }
+        
+        // Live GPS Map
+        function initLiveGPSMap() {
+            map = L.map('liveGPSMap').setView([20.5937, 78.9629], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            updateLiveGPSMap();
+        }
+        
+        async function updateLiveGPSMap() {
+            try {
+                const response = await fetch('/api/gps/all_tracks');
+                const tracks = await response.json();
+                
+                // Clear existing markers
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+                
+                // Add new markers
+                tracks.forEach(track => {
+                    const marker = L.marker([track.latitude, track.longitude])
+                        .bindPopup(`
+                            <b>${track.employee_name}</b><br>
+                            Vehicle: ${track.vehicle_id}<br>
+                            Status: ${track.status}<br>
+                            Speed: ${track.speed || 0} km/h
+                        `)
+                        .addTo(map);
+                });
+            } catch (error) {
+                console.error('Error updating GPS map:', error);
+                // Fallback to static data
+                const staticTracks = [
+                    {latitude: 28.7041, longitude: 77.1025, employee_name: 'Raj Kumar', vehicle_id: 'DL-01-1234', status: 'In Transit'},
+                    {latitude: 19.0760, longitude: 72.8777, employee_name: 'Amit Singh', vehicle_id: 'MH-02-5678', status: 'In Transit'},
+                    {latitude: 12.9716, longitude: 77.5946, employee_name: 'Suresh Reddy', vehicle_id: 'KA-03-9012', status: 'In Transit'}
+                ];
+                
+                staticTracks.forEach(track => {
+                    L.marker([track.latitude, track.longitude])
+                        .bindPopup(`<b>${track.employee_name}</b><br>Vehicle: ${track.vehicle_id}<br>Status: ${track.status}`)
+                        .addTo(map);
+                });
+            }
+        }
+        
+        // Analytics Charts
+        async function loadAnalyticsCharts() {
+            try {
+                const response = await fetch('/api/chart_data');
+                const data = await response.json();
+                
+                // Carbon Trend Chart
+                const carbonCtx = document.getElementById('carbonTrendChart').getContext('2d');
+                charts.carbonTrend = new Chart(carbonCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.carbon_trend_chart?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Carbon Footprint (kg CO₂)',
+                            data: data.carbon_trend_chart?.data || [120, 95, 110, 85, 100, 75, 90],
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+                
+                // Fuel Consumption Chart
+                const fuelCtx = document.getElementById('fuelChart').getContext('2d');
+                charts.fuel = new Chart(fuelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.fuel_consumption_chart?.labels || ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Fuel Consumption (L)',
+                            data: data.fuel_consumption_chart?.data || [450, 380, 420, 350],
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+                
+                // Weather Impact Chart
+                const weatherCtx = document.getElementById('weatherImpactChart').getContext('2d');
+                charts.weather = new Chart(weatherCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Clear', 'Rainy', 'Foggy', 'Cloudy'],
+                        datasets: [{
+                            data: [45, 25, 15, 15],
+                            backgroundColor: ['#f39c12', '#3498db', '#95a5a6', '#e74c3c']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+                
+                // Traffic Impact Chart
+                const trafficCtx = document.getElementById('trafficImpactChart').getContext('2d');
+                charts.traffic = new Chart(trafficCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Low Traffic', 'Medium Traffic', 'High Traffic'],
+                        datasets: [{
+                            data: [50, 30, 20],
+                            backgroundColor: ['#27ae60', '#f39c12', '#e74c3c']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+                
+                // Efficiency Breakdown Chart
+                const efficiencyCtx = document.getElementById('efficiencyChart').getContext('2d');
+                charts.efficiency = new Chart(efficiencyCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Fuel Efficiency', 'Route Optimization', 'Time Management', 'Carbon Reduction', 'Cost Effectiveness'],
+                        datasets: [{
+                            label: 'Current Performance',
+                            data: [85, 78, 92, 88, 75],
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+                
+            } catch (error) {
+                console.error('Error loading charts:', error);
+            }
+        }
+        
+        // Advanced Quote Generation
+        async function generateAdvancedQuote() {
+            const origin = document.getElementById('priceOrigin').value;
+            const destination = document.getElementById('priceDestination').value;
+            const weight = document.getElementById('priceWeight').value;
+            const urgency = document.getElementById('urgencyLevel').value;
+            
+            if (!weight) {
+                alert('Please enter load weight');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/pricing/quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ origin, destination, load_weight: weight, urgency })
+                });
+                
+                const quote = await response.json();
+                
+                document.getElementById('quoteResult').innerHTML = `
+                    <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 12px; margin-top: 1rem; border-left: 4px solid #27ae60;">
+                        <h6>💰 Smart Quote Generated</h6>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                            <div>
+                                <p><strong>Route:</strong> ${origin} → ${destination}</p>
+                                <p><strong>Distance:</strong> ${quote.distance_km || 1000} km</p>
+                                <p><strong>Load Weight:</strong> ${weight} kg</p>
+                            </div>
+                            <div>
+                                <p><strong>Service Level:</strong> ${urgency.charAt(0).toUpperCase() + urgency.slice(1)}</p>
+                                <p><strong>Quote ID:</strong> ${quote.quote_id}</p>
+                                <p><strong>Valid Until:</strong> 24 hours</p>
+                            </div>
+                        </div>
+                        <div style="background: #fff; padding: 1rem; border-radius: 8px; text-align: center; margin: 1rem 0;">
+                            <h4 style="color: #27ae60; margin: 0;">Final Price: ₹${quote.final_price}</h4>
+                            <p style="font-size: 0.8rem; color: #666; margin: 0.5rem 0;">*All taxes and fees included</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="sendQuoteToCustomer('${quote.quote_id}')" style="background: #3498db; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; flex: 1;">📧 Send to Customer</button>
+                            <button onclick="saveQuote('${quote.quote_id}')" style="background: #f39c12; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; flex: 1;">💾 Save Quote</button>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error generating quote:', error);
+                alert('Error generating quote. Please try again.');
+            }
+        }
+        
+        function sendQuoteToCustomer(quoteId) {
+            alert(`Quote ${quoteId} sent to customer via SMS and Email!`);
+        }
+        
+        function saveQuote(quoteId) {
+            alert(`Quote ${quoteId} saved to database!`);
+        }
+        
+        // Emergency Management
+        async function loadEmergencyAlerts() {
+            try {
+                // Check for emergency messages
+                const emergencyMessages = JSON.parse(localStorage.getItem('emergencyMessages') || '[]');
+                
+                if (emergencyMessages.length > 0) {
+                    const latestEmergency = emergencyMessages[emergencyMessages.length - 1];
+                    document.getElementById('emergencyAlerts').innerHTML = `
+                        <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <h6 style="color: #856404; margin-bottom: 0.5rem;">🚨 Active Emergency</h6>
+                            <p><strong>From:</strong> ${latestEmergency.employeeName} (${latestEmergency.employeeId})</p>
+                            <p><strong>Message:</strong> ${latestEmergency.message}</p>
+                            <p><strong>Time:</strong> ${latestEmergency.timestamp}</p>
+                            <div style="margin-top: 1rem;">
+                                <button onclick="respondToEmergency('${latestEmergency.employeeId}')" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">📞 Respond</button>
+                                <button onclick="dispatchHelp('${latestEmergency.employeeId}')" style="background: #f39c12; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">🚑 Dispatch Help</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('emergencyAlerts').innerHTML = `
+                        <div style="background: #d4edda; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <p style="color: #155724; margin: 0;">✓ No active emergencies</p>
+                            <p style="font-size: 0.8rem; color: #666; margin: 0.5rem 0;">All employees are safe</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading emergency alerts:', error);
+            }
+        }
+        
+        function respondToEmergency(employeeId) {
+            alert(`Calling employee ${employeeId}...\n\nConnection established!`);
+        }
+        
+        function dispatchHelp(employeeId) {
+            alert(`Emergency response team dispatched to employee ${employeeId} location!\n\nETA: 15-20 minutes`);
+        }
+        
+        function scheduleService(vehicle, component) {
+            alert(`Service scheduled for ${vehicle} - ${component}`);
+        }
+        
+        function exportAnalytics() {
+            const analyticsData = {
+                totalDistance: '45,230 km',
+                fuelEfficiency: '12.5 km/L',
+                carbonSaved: '2,450 kg CO₂',
+                costSavings: '₹1,25,000',
+                activeVehicles: 12,
+                inTransit: 8,
+                maintenance: 2,
+                available: 2,
+                monthlyImprovement: '15%',
+                fuelReduction: '8%',
+                customerSatisfaction: '4.7/5'
+            };
+            
+            const csvContent = Object.entries(analyticsData)
+                .map(([key, value]) => `${key},${value}`)
+                .join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert('📊 Analytics report exported successfully!');
+        }
+        
+        // AI Assistant Functions for Owner
+        async function askOwnerAI() {
+            const question = document.getElementById('aiQuestion').value;
+            if (!question.trim()) {
+                alert('कृपया कोई सवाल पूछें / Please ask a question');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: center;">
+                    <div class="loading"></div>
+                    <p style="margin-top: 0.5rem;">AI सोच रहा है... / AI is thinking...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/ai_assistant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                if (data.type === 'emergency') {
+                    showOwnerEmergencyResponse(data);
+                } else {
+                    showOwnerNormalResponse(data);
+                }
+                
+            } catch (error) {
+                console.error('AI Error:', error);
+                document.getElementById('aiResponse').innerHTML = `
+                    <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <strong>❌ Error:</strong> AI service temporarily unavailable. Please try again.
+                    </div>
+                `;
+            }
+        }
+        
+        function showOwnerNormalResponse(data) {
+            let suggestionsHtml = '';
+            if (data.suggestions && data.suggestions.length > 0) {
+                suggestionsHtml = `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                        <h6>💡 Suggested Questions:</h6>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                            ${data.suggestions.map(suggestion => 
+                                `<button onclick="document.getElementById('aiQuestion').value='${suggestion}'; askOwnerAI();" 
+                                         style="background: #e3f2fd; color: #1976d2; border: 1px solid #1976d2; padding: 0.3rem 0.8rem; border-radius: 15px; cursor: pointer; font-size: 0.8rem;">
+                                    ${suggestion}
+                                </button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <strong>🤖 AI Fleet Manager:</strong><br>${data.response}
+                    ${suggestionsHtml}
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                        <button onclick="showFleetInsights()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">📊 Fleet Insights</button>
+                        <button onclick="showMaintenanceSchedule()" style="background: #f39c12; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem; margin-left: 0.5rem;">🔧 Maintenance</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showOwnerEmergencyResponse(data) {
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+                    <h4 style="color: #856404; margin-bottom: 1rem;">🚨 Fleet Emergency Alert</h4>
+                    <p style="margin-bottom: 1rem;">${data.response}</p>
+                    
+                    <div style="display: grid; gap: 0.5rem;">
+                        <button onclick="contactAllEmployees()" style="background: #dc3545; color: white; border: none; padding: 0.8rem; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            📞 Contact All Employees
+                        </button>
+                        <button onclick="dispatchEmergencyTeam()" style="background: #fd7e14; color: white; border: none; padding: 0.8rem; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            🚑 Dispatch Emergency Team
+                        </button>
+                        <button onclick="viewFleetStatus()" style="background: #6f42c1; color: white; border: none; padding: 0.8rem; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            📊 View Fleet Status
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function clearOwnerAIChat() {
+            document.getElementById('aiQuestion').value = '';
+            document.getElementById('aiResponse').innerHTML = '';
+        }
+        
+        function showFleetInsights() {
+            document.getElementById('aiResponse').innerHTML += `
+                <div style="background: #d1ecf1; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <h6>📊 Fleet Performance Insights</h6>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                        <li>Average fuel efficiency: 12.5 km/L</li>
+                        <li>On-time delivery rate: 94%</li>
+                        <li>Vehicle utilization: 87%</li>
+                        <li>Maintenance cost savings: 15% this month</li>
+                        <li>Carbon footprint reduced by 8%</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        function showMaintenanceSchedule() {
+            document.getElementById('aiResponse').innerHTML += `
+                <div style="background: #ffeaa7; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <h6>🔧 Upcoming Maintenance Schedule</h6>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                        <li>DL-01-1234: Engine service due in 200 km</li>
+                        <li>MH-02-5678: Brake inspection due in 5 days</li>
+                        <li>KA-03-9012: Tire rotation scheduled tomorrow</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        function contactAllEmployees() {
+            alert('📞 Broadcasting emergency message to all employees...\n\nAll active employees will receive SMS and call within 2 minutes.');
+        }
+        
+        function dispatchEmergencyTeam() {
+            alert('🚑 Emergency response team dispatched!\n\nETA: 15-20 minutes to affected location.');
+        }
+        
+        function viewFleetStatus() {
+            alert('📊 Opening real-time fleet monitoring dashboard...');
+        }
+        
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Save owner profile
+        function saveOwnerProfile() {
+            const profile = {
+                name: document.getElementById('ownerNameInput').value,
+                id: document.getElementById('ownerIdInput').value,
+                company: document.getElementById('companyNameInput').value,
+                year: document.getElementById('companyYearInput').value,
+                phone: document.getElementById('ownerPhoneInput').value,
+                email: document.getElementById('ownerEmailInput').value
+            };
+            localStorage.setItem('ownerProfile', JSON.stringify(profile));
+            loadOwnerProfile();
+            closeModal('ownerProfileModal');
+            alert('Profile saved successfully!');
+        }
+        
+        // Register employee
+        function registerEmployee() {
+            const employee = {
+                id: 'EMP-' + Date.now().toString().slice(-6),
+                name: document.getElementById('empName').value,
+                phone: document.getElementById('empPhone').value,
+                license: document.getElementById('empLicense').value,
+                aadhar: document.getElementById('empAadhar').value,
+                address: document.getElementById('empAddress').value,
+                registeredDate: new Date().toLocaleDateString()
+            };
+            
+            const employees = JSON.parse(localStorage.getItem('registeredEmployees') || '[]');
+            employees.push(employee);
+            localStorage.setItem('registeredEmployees', JSON.stringify(employees));
+            
+            loadEmployeeCount();
+            closeModal('employeeRegModal');
+            alert(`Employee registered successfully! ID: ${employee.id}`);
+            
+            // Clear form
+            document.getElementById('employeeForm').reset();
+        }
+        
+        // Save company details
+        function saveCompanyDetails() {
+            const company = {
+                name: document.getElementById('companyNameDetail').value,
+                address: document.getElementById('companyAddress').value,
+                gst: document.getElementById('companyGST').value,
+                pan: document.getElementById('companyPAN').value,
+                license: document.getElementById('transportLicense').value
+            };
+            localStorage.setItem('companyDetails', JSON.stringify(company));
+            closeModal('companyModal');
+            alert('Company details saved successfully!');
+        }
+    </script>
+    
+    <!-- Modals -->
+    <div id="ownerProfileModal" class="modal">
+        <div class="modal-content">
+            <h3>👨‍💼 Owner Profile</h3>
+            <input type="text" id="ownerNameInput" placeholder="Full Name" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="text" id="ownerIdInput" placeholder="Owner ID" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="text" id="companyNameInput" placeholder="Company Name" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="number" id="companyYearInput" placeholder="Established Year" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="tel" id="ownerPhoneInput" placeholder="Phone Number" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="email" id="ownerEmailInput" placeholder="Email Address" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="file" accept="image/*" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0;">
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="saveOwnerProfile()" class="btn">💾 Save Profile</button>
+                <button onclick="closeModal('ownerProfileModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="employeeRegModal" class="modal">
+        <div class="modal-content">
+            <h3>👥 Register New Employee</h3>
+            <form id="employeeForm">
+                <input type="text" id="empName" placeholder="Employee Full Name" required style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <input type="tel" id="empPhone" placeholder="Phone Number" required style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <input type="text" id="empLicense" placeholder="Driving License Number" required style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <input type="text" id="empAadhar" placeholder="Aadhar Number" required style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <textarea id="empAddress" placeholder="Address" required style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px; height: 80px;"></textarea>
+                <div style="margin: 1rem 0;">
+                    <label>Upload Documents:</label>
+                    <input type="file" accept="image/*,.pdf" multiple style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+                </div>
+            </form>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="registerEmployee()" class="btn">✅ Register Employee</button>
+                <button onclick="closeModal('employeeRegModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="companyModal" class="modal">
+        <div class="modal-content">
+            <h3>🏢 Company Details</h3>
+            <input type="text" id="companyNameDetail" placeholder="Company Name" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <textarea id="companyAddress" placeholder="Company Address" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px; height: 80px;"></textarea>
+            <input type="text" id="companyGST" placeholder="GST Number" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="text" id="companyPAN" placeholder="PAN Number" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="text" id="transportLicense" placeholder="Transport License Number" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="saveCompanyDetails()" class="btn">💾 Save Details</button>
+                <button onclick="closeModal('companyModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="documentsModal" class="modal">
+        <div class="modal-content">
+            <h3>📄 Owner Documents</h3>
+            <div style="margin: 1rem 0;">
+                <label>Business License:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>GST Certificate:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>Transport License:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>PAN Card:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="closeModal('documentsModal')" class="btn">💾 Upload Documents</button>
+                <button onclick="closeModal('documentsModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Assistant Modal -->
+    <div id="aiModal" class="modal">
+        <div class="modal-content">
+            <h3>🤖 AI Assistant for Fleet Management</h3>
+            <p>Ask me about fleet management, employee tracking, maintenance, pricing, or any logistics questions!</p>
+            <textarea id="aiQuestion" placeholder="Type your question here...\n\nExamples:\n- How to optimize fleet efficiency?\n- Best practices for employee management?\n- Maintenance scheduling tips?\n- Pricing strategies?" style="width: 100%; height: 120px; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; margin: 1rem 0;"></textarea>
+            <div id="aiResponse"></div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="askOwnerAI()" class="btn">🚀 Ask AI</button>
+                <button onclick="clearOwnerAIChat()" style="background: #6c757d; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">🗑️ Clear</button>
+                <button onclick="closeModal('aiModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analytics Modal -->
+    <div id="analyticsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h3>📊 Advanced Analytics Dashboard</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;">
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                    <h5>📊 Performance Metrics</h5>
+                    <p><strong>Total Distance:</strong> 45,230 km</p>
+                    <p><strong>Fuel Efficiency:</strong> 12.5 km/L</p>
+                    <p><strong>Carbon Saved:</strong> 2,450 kg CO₂</p>
+                    <p><strong>Cost Savings:</strong> ₹1,25,000</p>
+                </div>
+                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
+                    <h5>🚛 Fleet Status</h5>
+                    <p><strong>Active Vehicles:</strong> 12</p>
+                    <p><strong>In Transit:</strong> 8</p>
+                    <p><strong>Maintenance:</strong> 2</p>
+                    <p><strong>Available:</strong> 2</p>
+                </div>
+            </div>
+            <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <h5>📈 Monthly Trends</h5>
+                <p>Route optimization has improved by 15% this month</p>
+                <p>Fuel consumption reduced by 8% compared to last month</p>
+                <p>Customer satisfaction score: 4.7/5</p>
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="exportAnalytics()" style="background: #28a745; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin: 0.5rem;">📊 Export Report</button>
+                <button onclick="closeModal('analyticsModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin: 0.5rem;">Close</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

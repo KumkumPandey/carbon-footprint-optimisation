@@ -1,0 +1,61 @@
+truck_id,start_location,end_location,load_weight_kg
+T001,"New Delhi","Mumbai",5000
+T002,"Bangalore","Chennai",3500
+T003,"Hyderabad","Pune",6200
+T004,"Mumbai","Kolkata",4800
+T005,"New Delhi","Bangalore",5500
+T006,"Pune","New Delhi",4500
+T007,"Kolkata","Chennai",3800
+T008,"Hyderabad","Bangalore",5100
+T009,"Mumbai","Pune",3000
+T010,"Chennai","Mumbai",5900
+T011,"New Delhi","Kolkata",6000
+T012,"Bangalore","Mumbai",4200
+T013,"Pune","Kolkata",3900
+T014,"Hyderabad","New Delhi",5300
+T015,"Chennai","Hyderabad",4700
+T016,"Jaipur","Lucknow",4100
+T017,"Bhopal","Indore",3200
+T018,"Ahmedabad","Surat",5800
+T019,"Chandigarh","Shimla",2500
+T020,"Lucknow","Patna",5400
+T021,"Guwahati","Shillong",3600
+T022,"Bhubaneswar","Cuttack",4900
+T023,"Thiruvananthapuram","Kochi",4300
+T024,"Nashik","Nagpur",5200
+T025,"Vadodara","Rajkot",3700
+T026,"Amritsar","Ludhiana",2800
+T027,"Agra","Kanpur",4600
+T028,"Varanasi","Allahabad",5000
+T029,"Kochi","Coimbatore",3300
+T030,"Mysuru","Mangaluru",4400
+T031,"Visakhapatnam","Vijayawada",5100
+T032,"Jabalpur","Raipur",4700
+T033,"Srinagar","Jammu",3900
+T034,"Panaji","Belagavi",3100
+T035,"Ranchi","Dhanbad",4000
+T036,"Kochi","Coimbatore",3300
+T037,"Mysuru","Mangaluru",4400
+T038,"Visakhapatnam","Vijayawada",5100
+T039,"Jabalpur","Raipur",4700
+T040,"Srinagar","Jammu",3900
+T041,"Panaji","Belagavi",3100
+T042,"Ranchi","Dhanbad",4000
+T043,"Jalandhar","Patiala",2700
+T044,"Kharagpur","Durgapur",3500
+T045,"Kollam","Tirunelveli",4500
+T046,"Udaipur","Ajmer",3200
+T047,"Bikaner","Jaisalmer",4100
+T048,"Aurangabad","Latur",3800
+T049,"Kota","Bundi",2900
+T050,"Dehradun","Haridwar",3000
+T051,"Puducherry","Tiruchirappalli",4200
+T052,"Gaya","Darbhanga",5500
+T053,"Agartala","Imphal",3900
+T054,"Aizawl","Silchar",4800
+T055,"Itanagar","Naharlagun",2600
+T056,"Kohima","Dimapur",3400
+T057,"Gangtok","Darjeeling",2900
+T058,"Daman","Silvassa",3200
+T059,"Port Blair","Havelock",1500
+T060,"Kavaratti","Agatti",1000

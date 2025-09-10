@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Carbon Footprint Optimizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-common.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .header-left { display: flex; align-items: center; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; }
+        .logo-icon { font-size: 2.5rem; background: linear-gradient(135deg, #2c3e50, #34495e); padding: 0.5rem; border-radius: 50%; }
+        .logo-text h2 { font-size: 1.5rem; margin: 0; }
+        .logo-text p { font-size: 0.9rem; margin: 0; opacity: 0.8; }
+        .header-right { display: flex; align-items: center; gap: 1rem; }
+        .welcome-text { font-size: 1.1rem; font-weight: 600; }
+        .mobile-menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); animation: shine 3s infinite; }
+        .header h1 { font-size: 1.8rem; font-weight: 600; text-align: center; flex: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        @keyframes shine { 0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); } 100% { transform: translateX(100%) translateY(100%) rotate(45deg); } }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; margin-left: 280px; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #2c3e50, #34495e); color: white; padding: 2rem 1rem; overflow-y: auto; z-index: 1000; }
+        .profile-section { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .profile-pic { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #3498db, #2980b9); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+        .profile-pic:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 8px 25px rgba(52,152,219,0.4); }
+        .profile-pic::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent); transform: rotate(45deg); transition: all 0.6s; opacity: 0; }
+        .profile-pic:hover::before { opacity: 1; transform: rotate(45deg) translate(50%, 50%); }
+        .nav-item { padding: 0.8rem; margin: 0.5rem 0; border-radius: 12px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; border: 1px solid transparent; }
+        .nav-item:hover { background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); transform: translateX(10px) scale(1.02); border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+        .nav-item.active { background: linear-gradient(135deg, #3498db, #2980b9); transform: translateX(5px); box-shadow: 0 4px 20px rgba(52,152,219,0.3); border-color: rgba(255,255,255,0.3); }
+        .nav-item::before { content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .nav-item:hover::before { left: 100%; }
+        .nav-item i { margin-right: 0.5rem; font-size: 1.1rem; }
+        .company-info { background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .ai-chat { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, #e74c3c, #c0392b); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1001; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: pulse 2s infinite; }
+        .ai-chat:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 8px 30px rgba(231,76,60,0.4); }
+        .ai-chat:active { transform: scale(0.95); }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 4px 20px rgba(231,76,60,0.3); } 50% { box-shadow: 0 4px 30px rgba(231,76,60,0.6), 0 0 0 10px rgba(231,76,60,0.1); } }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002; }
+        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 15px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .form-section { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 2.5rem; border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .form-section:hover { transform: translateY(-5px); box-shadow: 0 15px 45px rgba(0,0,0,0.15); }
+        .form-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #27ae60, #2ecc71, #3498db); }
+        .form-section h2 { color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #34495e; }
+        input, select { width: 100%; padding: 0.9rem; border: 2px solid #e0e6ed; border-radius: 10px; font-size: 1rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(255,255,255,0.9); position: relative; }
+        input:focus, select:focus { outline: none; border-color: #27ae60; box-shadow: 0 0 0 3px rgba(39,174,96,0.1), 0 8px 25px rgba(39,174,96,0.15); transform: translateY(-2px); background: rgba(255,255,255,1); }
+        input:hover, select:hover { border-color: #3498db; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(52,152,219,0.1); }
+        .btn { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 0.9rem 2rem; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(39,174,96,0.3); position: relative; overflow: hidden; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,0.4); }
+        .btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: rgba(255,255,255,0.3); border-radius: 50%; transition: width 0.3s, height 0.3s; transform: translate(-50%, -50%); }
+        .btn:active::before { width: 300px; height: 300px; }
+        .logout-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .logout-btn:hover { box-shadow: 0 6px 20px rgba(231,76,60,0.4); }
+        .map-container { height: 600px; width: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .results { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 2.5rem; border-radius: 20px; margin-top: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); transition: all 0.4s ease; animation: slideInUp 0.6s ease-out; }
+        .results:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .results h3 { color: #2c3e50; margin-bottom: 1.5rem; text-align: center; }
+        .hidden { display: none; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .stats-card { background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 15px; text-align: center; margin-bottom: 1rem; position: relative; overflow: hidden; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .stats-card:hover { transform: translateY(-10px) scale(1.05) rotateX(5deg); box-shadow: 0 20px 40px rgba(52,152,219,0.4); }
+        .stats-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.6s ease; }
+        .stats-card:hover::before { left: 100%; }
+        .stats-card::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%); border-radius: 50%; transition: all 0.4s ease; transform: translate(-50%, -50%); }
+        .stats-card:active::after { width: 200px; height: 200px; }
+        .stats-card h4 { margin-bottom: 0.5rem; }
+        .stats-card .value { font-size: 2rem; font-weight: bold; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .floating-elements { position: absolute; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+        .floating-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.1); animation: float 6s ease-in-out infinite; }
+        .floating-circle:nth-child(1) { width: 80px; height: 80px; top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-circle:nth-child(2) { width: 120px; height: 120px; top: 70%; right: 10%; animation-delay: 2s; }
+        .floating-circle:nth-child(3) { width: 60px; height: 60px; bottom: 20%; left: 60%; animation-delay: 4s; }
+        @keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-20px) rotate(180deg); } }
+        @keyframes glow { from { box-shadow: 0 4px 15px rgba(39,174,96,0.3); } to { box-shadow: 0 6px 25px rgba(39,174,96,0.6), 0 0 30px rgba(39,174,96,0.2); } }
+        .form-group { position: relative; }
+        .form-group label { transition: all 0.3s ease; }
+        .form-group:hover label { color: #27ae60; transform: translateX(5px); }
+        .btn-glow { animation: glow 2s ease-in-out infinite alternate; }
+        @media (max-width: 768px) { 
+            .grid { grid-template-columns: 1fr; } 
+            .dashboard-grid { grid-template-columns: 1fr; } 
+            .header { flex-direction: row; padding: 1rem; }
+            .header-left .logo-text h2 { font-size: 1.2rem; }
+            .header-left .logo-text p { display: none; }
+            .header-right { gap: 0.5rem; }
+            .welcome-text { display: none; }
+            .mobile-menu-btn { display: block; }
+            .container { margin-left: 0; padding: 1rem; } 
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.mobile-open { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="profile-section">
+            <div class="profile-pic" onclick="openModal('profileModal')">👤</div>
+            <h4 id="employeeName">Employee Name</h4>
+            <p style="font-size: 0.8rem; opacity: 0.8;">ID: <span id="employeeId">EMP-001</span></p>
+        </div>
+        
+        <div class="nav-item active" onclick="showSection('dashboard')">
+            <i>🏠</i> Dashboard
+        </div>
+        <div class="nav-item" onclick="openModal('vehicleModal')">
+            <i>🚛</i> Vehicle Details
+        </div>
+        <div class="nav-item" onclick="openModal('documentsModal')">
+            <i>📄</i> Documents
+        </div>
+        <div class="nav-item" onclick="openModal('profileModal')">
+            <i>👤</i> Profile
+        </div>
+        <div class="nav-item" onclick="openModal('pricingModal')">
+            <i>💰</i> Get Quote
+        </div>
+        <div class="nav-item" onclick="openModal('maintenanceModal')">
+            <i>🔧</i> Vehicle Health
+        </div>
+        <div class="nav-item" onclick="openModal('routeHistoryModal')">
+            <i>🗺️</i> Route History
+        </div>
+        
+        <div class="company-info">
+            <h5>🏢 Company Info</h5>
+            <p id="companyName">ABC Logistics</p>
+            <button onclick="contactOwner()" style="background: #27ae60; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; width: 100%; margin-top: 0.5rem; cursor: pointer;">📞 Contact Owner</button>
+        </div>
+    </div>
+    
+    <!-- AI Chat Button -->
+    <div class="ai-chat" onclick="openModal('aiModal')" title="AI Assistant">
+        🤖
+    </div>
+    
+    <div class="header">
+        <div class="header-left">
+            <div class="logo-section">
+                <div class="logo-icon">🌱</div>
+                <div class="logo-text">
+                    <h2>Smart Carbon Footprint Optimizer</h2>
+                    <p>AI-powered logistics management system</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="welcome-text">Welcome, Employee</span>
+        <button class="btn logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 20px; margin-bottom: 2rem; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            <h2 style="color: #2c3e50; margin-bottom: 1rem; font-size: 2rem;">🌟 Welcome to Smart Carbon Footprint Optimizer</h2>
+            <p style="color: #666; font-size: 1.1rem; line-height: 1.6; max-width: 800px; margin: 0 auto;">Revolutionary AI-powered logistics management system that reduces carbon emissions while optimizing your supply chain operations. Plan efficient routes, track your carbon footprint, and contribute to a greener future.</p>
+        </div>
+        
+        <div class="floating-elements">
+            <div class="floating-circle"></div>
+            <div class="floating-circle"></div>
+            <div class="floating-circle"></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="stats-card" onclick="viewAllRoutes()" style="cursor: pointer;">
+                <h4>📈 Total Routes Planned</h4>
+                <div class="value" id="totalRoutes">0</div>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.8;">Click to view all routes</p>
+            </div>
+            <div class="stats-card">
+                <h4>🌱 CO₂ Saved Today</h4>
+                <div class="value" id="carbonSaved">0 kg</div>
+                <button onclick="clearAllData()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; margin-top: 0.5rem; cursor: pointer;">🗑️ Clear Data</button>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>🗺️ Plan Your Optimized Route</h2>
+            <form id="routeForm">
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userId">Your ID:</label>
+                        <input type="text" id="userId" name="userId" placeholder="Enter your ID" required>
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="startState">From State:</label>
+                        <select id="startState" name="startState" onchange="loadDistricts('start')" required>
+                            <option value="">Select state</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="startDistrict">From District:</label>
+                        <select id="startDistrict" name="startDistrict" onchange="loadCities('start')" required disabled>
+                            <option value="">Select district</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="startCity">From City:</label>
+                        <select id="startCity" name="startCity" required disabled>
+                            <option value="">Select city</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="startPincode">From Pincode:</label>
+                        <input type="text" id="startPincode" name="startPincode" placeholder="Enter pincode" readonly>
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="endState">To State:</label>
+                        <select id="endState" name="endState" onchange="loadDistricts('end')" required>
+                            <option value="">Select state</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDistrict">To District:</label>
+                        <select id="endDistrict" name="endDistrict" onchange="loadCities('end')" required disabled>
+                            <option value="">Select district</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="endCity">To City:</label>
+                        <select id="endCity" name="endCity" required disabled>
+                            <option value="">Select city</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="endPincode">To Pincode:</label>
+                        <input type="text" id="endPincode" name="endPincode" placeholder="Enter pincode" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loadWeight">Load Weight (kg):</label>
+                    <input type="number" id="loadWeight" name="loadWeight" placeholder="Enter load weight in kg" required>
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button type="submit" class="btn">🔍 Find Optimized Route</button>
+                    <button type="button" class="btn" onclick="refreshLocationData()" style="background: linear-gradient(135deg, #3498db, #2980b9); margin-left: 10px;">🔄 Refresh Locations</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="resultsSection" class="results hidden">
+            <h3>Optimized Route Results</h3>
+            <div id="routeDetails"></div>
+            <div id="routeHistory" class="hidden" style="background: rgba(255,255,255,0.9); padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem;"></div>
+            <div id="map" class="map-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let locationData = [];
+        
+        document.getElementById('date').valueAsDate = new Date();
+        
+        // Load location data and initialize stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLocationData();
+            updateStats();
+            loadUserProfile();
+        });
+        
+        // Clear data on page refresh
+        window.addEventListener('beforeunload', function() {
+            if (performance.navigation.type === 1) { // Page refresh
+                localStorage.removeItem('totalRoutes');
+                localStorage.removeItem('carbonSaved');
+                localStorage.removeItem('routeHistory');
+            }
+        });
+        
+        async function loadLocationData() {
+            try {
+                // Force refresh locations
+                await fetch('/refresh_locations');
+                
+                // Then load the location data with cache busting
+                const response = await fetch('/api/locations?t=' + Date.now());
+                locationData = await response.json();
+                
+                // Populate states
+                const states = [...new Set(locationData.map(loc => loc.state))];
+                populateSelect('startState', states);
+                populateSelect('endState', states);
+                
+                console.log('Loaded', locationData.length, 'locations');
+            } catch (error) {
+                console.error('Error loading location data:', error);
+                alert('Error loading location data. Please refresh the page.');
+            }
+        }
+        
+        function refreshLocationData() {
+            locationData = [];
+            document.getElementById('startState').innerHTML = '<option value=""><div class="loading"></div> Loading...</option>';
+            document.getElementById('endState').innerHTML = '<option value=""><div class="loading"></div> Loading...</option>';
+            
+            // Reset all dependent dropdowns
+            ['startDistrict', 'startCity', 'endDistrict', 'endCity'].forEach(id => {
+                document.getElementById(id).innerHTML = '<option value="">Select...</option>';
+                document.getElementById(id).disabled = true;
+            });
+            
+            // Clear pincodes
+            document.getElementById('startPincode').value = '';
+            document.getElementById('endPincode').value = '';
+            
+            loadLocationData();
+        }
+        
+        // Update dashboard stats
+        function updateStats() {
+            const totalRoutes = localStorage.getItem('totalRoutes') || 0;
+            const carbonSaved = localStorage.getItem('carbonSaved') || 0;
+            
+            document.getElementById('totalRoutes').textContent = totalRoutes;
+            document.getElementById('carbonSaved').textContent = carbonSaved + ' kg';
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all route data?')) {
+                localStorage.removeItem('totalRoutes');
+                localStorage.removeItem('carbonSaved');
+                localStorage.removeItem('routeHistory');
+                updateStats();
+                alert('All data cleared successfully!');
+            }
+        }
+        
+        // View all routes in map section
+        function viewAllRoutes() {
+            const routeHistory = JSON.parse(localStorage.getItem('routeHistory') || '[]');
+            if (routeHistory.length === 0) {
+                document.getElementById('routeHistory').innerHTML = '<p>No routes planned yet!</p>';
+                document.getElementById('routeHistory').classList.remove('hidden');
+                return;
+            }
+            
+            let routeHtml = '<h4>📍 All Planned Routes</h4><div style="display: grid; gap: 1rem;">';
+            routeHistory.forEach((route, index) => {
+                routeHtml += `
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #3498db;">
+                        <h5>Route ${index + 1}: ${route.from} → ${route.to}</h5>
+                        <p><strong>Date:</strong> ${route.date} | <strong>Distance:</strong> ${route.distance} km | <strong>Carbon:</strong> ${route.carbon} kg CO₂</p>
+                        <button onclick="openRouteInMaps('${route.from}', '${route.to}')" style="background: #3498db; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer;">🗺️ View Route</button>
+                    </div>
+                `;
+            });
+            routeHtml += '</div>';
+            
+            document.getElementById('routeHistory').innerHTML = routeHtml;
+            document.getElementById('routeHistory').classList.remove('hidden');
+        }
+        
+        function openRouteInMaps(fromCity, toCity) {
+            const fromCoords = getCityCoords(fromCity);
+            const toCoords = getCityCoords(toCity);
+            openGoogleMaps(fromCoords[0], fromCoords[1], toCoords[0], toCoords[1]);
+        }
+        
+        // Initialize stats on page load - remove duplicate
+        updateStats();
+        
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Select ' + selectId.replace(/start|end/i, '').toLowerCase() + '</option>';
+            options.forEach(option => {
+                select.innerHTML += `<option value="${option}">${option}</option>`;
+            });
+        }
+        
+        function loadDistricts(type) {
+            const stateSelect = document.getElementById(type + 'State');
+            const districtSelect = document.getElementById(type + 'District');
+            const citySelect = document.getElementById(type + 'City');
+            const pincodeInput = document.getElementById(type + 'Pincode');
+            
+            const selectedState = stateSelect.value;
+            
+            if (selectedState) {
+                const districts = [...new Set(locationData.filter(loc => loc.state === selectedState).map(loc => loc.district))];
+                populateSelect(type + 'District', districts);
+                districtSelect.disabled = false;
+                
+                // Reset dependent fields
+                citySelect.innerHTML = '<option value="">Select city</option>';
+                citySelect.disabled = true;
+                pincodeInput.value = '';
+            } else {
+                districtSelect.innerHTML = '<option value="">Select district</option>';
+                districtSelect.disabled = true;
+                citySelect.innerHTML = '<option value="">Select city</option>';
+                citySelect.disabled = true;
+                pincodeInput.value = '';
+            }
+        }
+        
+        function loadCities(type) {
+            const stateSelect = document.getElementById(type + 'State');
+            const districtSelect = document.getElementById(type + 'District');
+            const citySelect = document.getElementById(type + 'City');
+            const pincodeInput = document.getElementById(type + 'Pincode');
+            
+            const selectedState = stateSelect.value;
+            const selectedDistrict = districtSelect.value;
+            
+            if (selectedState && selectedDistrict) {
+                const cities = locationData.filter(loc => loc.state === selectedState && loc.district === selectedDistrict);
+                const cityNames = [...new Set(cities.map(loc => loc.city))];
+                populateSelect(type + 'City', cityNames);
+                citySelect.disabled = false;
+                
+                // Auto-fill pincode if only one city
+                if (cities.length === 1) {
+                    pincodeInput.value = cities[0].pincode;
+                }
+                
+                // Add event listener to city select
+                citySelect.onchange = function() {
+                    const selectedCity = this.value;
+                    if (selectedCity) {
+                        const cityData = cities.find(loc => loc.city === selectedCity);
+                        if (cityData) {
+                            pincodeInput.value = cityData.pincode;
+                        }
+                    } else {
+                        pincodeInput.value = '';
+                    }
+                };
+            } else {
+                citySelect.innerHTML = '<option value="">Select city</option>';
+                citySelect.disabled = true;
+                pincodeInput.value = '';
+            }
+        }
+
+        document.getElementById('routeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const startCity = document.getElementById('startCity').value;
+            const endCity = document.getElementById('endCity').value;
+            
+            if (!startCity || !endCity) {
+                alert('Please select both start and end locations completely.');
+                return;
+            }
+            
+            const formData = {
+                date: document.getElementById('date').value,
+                user_id: document.getElementById('userId').value,
+                start_location: startCity,
+                end_location: endCity,
+                load_weight_kg: parseFloat(document.getElementById('loadWeight').value)
+            };
+
+            try {
+                // Show loading
+                document.getElementById('routeDetails').innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="loading"></div> Optimizing route...</div>';
+                document.getElementById('resultsSection').classList.remove('hidden');
+                
+                const response = await fetch('/predict_carbon', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Server error');
+                }
+
+                const result = await response.json();
+                displayResults(result, formData);
+                initMap(startCity, endCity);
+                
+                // Update stats and save route history
+                const totalRoutes = parseInt(localStorage.getItem('totalRoutes') || 0) + 1;
+                const carbonSaved = parseFloat(localStorage.getItem('carbonSaved') || 0) + (result.optimized_carbon_footprint_kg * 0.1);
+                
+                // Save route to history
+                const routeHistory = JSON.parse(localStorage.getItem('routeHistory') || '[]');
+                routeHistory.push({
+                    from: startCity,
+                    to: endCity,
+                    date: formData.date,
+                    distance: result.distance_km,
+                    carbon: result.optimized_carbon_footprint_kg
+                });
+                
+                localStorage.setItem('totalRoutes', totalRoutes);
+                localStorage.setItem('carbonSaved', carbonSaved.toFixed(1));
+                localStorage.setItem('routeHistory', JSON.stringify(routeHistory));
+                updateStats();
+            } catch (error) {
+                console.error('Route optimization error:', error);
+                document.getElementById('routeDetails').innerHTML = `<div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 4px;">❌ Error: ${error.message}</div>`;
+            }
+        });
+
+        function displayResults(result, formData) {
+            const resultsHtml = `
+                <div style="background: #e8f5e8; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <h4>✅ Trip Details</h4>
+                    <p><strong>Date:</strong> ${formData.date}</p>
+                    <p><strong>User ID:</strong> ${formData.user_id}</p>
+                    <p><strong>Route:</strong> ${result.start_location} → ${result.end_location}</p>
+                    <p><strong>Distance:</strong> ${result.distance_km} km</p>
+                    <p><strong>Load Weight:</strong> ${formData.load_weight_kg} kg</p>
+                </div>
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <h4>🌤️ Predicted Conditions</h4>
+                    <p><strong>Traffic:</strong> ${result.predicted_traffic}</p>
+                    <p><strong>Weather:</strong> ${result.predicted_weather}</p>
+                    <p><strong>Road Condition:</strong> ${result.road_condition}</p>
+                </div>
+                <div style="background: #d1ecf1; padding: 1rem; border-radius: 4px;">
+                    <h4>🌱 Carbon Footprint</h4>
+                    <p><strong>Optimized Carbon Footprint:</strong> ${result.optimized_carbon_footprint_kg} kg CO₂</p>
+                    <p style="color: #27ae60; font-weight: bold;">✨ Route optimized for minimal environmental impact!</p>
+                </div>
+            `;
+            
+            document.getElementById('routeDetails').innerHTML = resultsHtml;
+            document.getElementById('resultsSection').classList.remove('hidden');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        }
+    </script>
+
+    <script>
+        function getCityCoords(cityName) {
+            const city = locationData.find(loc => loc.city === cityName);
+            return city ? [city.lat, city.lng] : [28.7041, 77.1025];
+        }
+
+        function initMap(startCity, endCity) {
+            if (!startCity || !endCity) return;
+            
+            const start = getCityCoords(startCity);
+            const end = getCityCoords(endCity);
+            
+            const mapContainer = document.getElementById('map');
+            mapContainer.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 2rem;">
+                    <h3 style="margin-bottom: 2rem;">🗺️ Route Map</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px); margin-bottom: 2rem; width: 80%;">
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: center;">
+                            <div style="text-align: center;">
+                                <div style="background: #27ae60; color: white; padding: 1rem; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">🚩</div>
+                                <h4>Start: ${startCity}</h4>
+                                <p>Lat: ${start[0].toFixed(4)}</p>
+                                <p>Lng: ${start[1].toFixed(4)}</p>
+                            </div>
+                            <div style="font-size: 2rem;">→</div>
+                            <div style="text-align: center;">
+                                <div style="background: #e74c3c; color: white; padding: 1rem; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">🏁</div>
+                                <h4>End: ${endCity}</h4>
+                                <p>Lat: ${end[0].toFixed(4)}</p>
+                                <p>Lng: ${end[1].toFixed(4)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="routeOptions" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem;">
+                        <button onclick="openGoogleMaps(${start[0]}, ${start[1]}, ${end[0]}, ${end[1]}, 'driving')" style="background: #4285f4; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; cursor: pointer; font-weight: 600;">🚗 Route 1 (Driving)</button>
+                        <button onclick="openGoogleMaps(${start[0]}, ${start[1]}, ${end[0]}, ${end[1]}, 'transit')" style="background: #34a853; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; cursor: pointer; font-weight: 600;">🚌 Route 2 (Transit)</button>
+                        <button onclick="showStaticMap('${startCity}', '${endCity}', ${start[0]}, ${start[1]}, ${end[0]}, ${end[1]})" style="background: #e74c3c; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; cursor: pointer; font-weight: 600;">🗺️ Show Map</button>
+                    </div>
+                    <div id="distanceInfo" style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                        <div onclick="calculateDistance(${start[0]}, ${start[1]}, ${end[0]}, ${end[1]})" style="cursor: pointer; text-align: center;">
+                            <h4>📏 Distance & Fuel Calculator</h4>
+                            <p>Click to calculate distance and fuel requirements</p>
+                        </div>
+                    </div>
+                    <div id="mapDisplay" style="margin-top: 1rem;"></div>
+                </div>
+            `;
+        }
+        
+        function openGoogleMaps(startLat, startLng, endLat, endLng, mode = 'driving') {
+            const url = `https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}/@${startLat},${startLng},10z/data=!3m1!4b1!4m2!4m1!3e${mode === 'transit' ? '3' : '0'}`;
+            window.open(url, '_blank');
+        }
+        
+        function calculateDistance(startLat, startLng, endLat, endLng) {
+            const R = 6371;
+            const dLat = (endLat - startLat) * Math.PI / 180;
+            const dLon = (endLng - startLng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(startLat * Math.PI / 180) * Math.cos(endLat * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            
+            // Fuel calculations
+            const petrolMileage = 15; // km per liter
+            const dieselMileage = 20; // km per liter
+            const petrolNeeded = (distance / petrolMileage).toFixed(2);
+            const dieselNeeded = (distance / dieselMileage).toFixed(2);
+            const estimatedTime = (distance / 60).toFixed(1);
+            
+            const infoHtml = `
+                <h4>📏 Distance & Fuel Information</h4>
+                <p><strong>Distance:</strong> ${distance.toFixed(2)} km</p>
+                <p><strong>Estimated Time:</strong> ${estimatedTime} hours</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 5px;">
+                        <strong>⛽ Petrol Required:</strong><br>${petrolNeeded} liters
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 5px;">
+                        <strong>🛢️ Diesel Required:</strong><br>${dieselNeeded} liters
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('distanceInfo').innerHTML = infoHtml;
+        }
+        
+        function showStaticMap(startCity, endCity, startLat, startLng, endLat, endLng) {
+            const mapHtml = `
+                <div style="background: white; padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                    <h4 style="color: #2c3e50; text-align: center; margin-bottom: 1rem;">🗺️ Route Map: ${startCity} to ${endCity}</h4>
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: center; margin-bottom: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: #e8f5e8; border-radius: 8px;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚩</div>
+                            <h5 style="color: #27ae60;">${startCity}</h5>
+                            <p style="font-size: 0.9rem; color: #666;">Start Point</p>
+                            <p style="font-size: 0.8rem;">📍 ${startLat.toFixed(4)}, ${startLng.toFixed(4)}</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; color: #3498db;">→</div>
+                            <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">Route</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: #ffeaa7; border-radius: 8px;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏁</div>
+                            <h5 style="color: #e17055;">${endCity}</h5>
+                            <p style="font-size: 0.9rem; color: #666;">Destination</p>
+                            <p style="font-size: 0.8rem;">📍 ${endLat.toFixed(4)}, ${endLng.toFixed(4)}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Static Map using OpenStreetMap -->
+                    <div style="text-align: center; margin: 1rem 0;">
+                        <img src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s-a+9ed4bd(${startLng},${startLat}),pin-s-b+000(${endLng},${endLat}),path-5+f44-0.5(${encodeURIComponent('polyline?')})/auto/600x400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw" 
+                             alt="Route Map" 
+                             style="width: 100%; max-width: 600px; height: 300px; border-radius: 8px; border: 2px solid #ddd;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        
+                        <!-- Fallback if image fails -->
+                        <div style="display: none; background: #f8f9fa; padding: 2rem; border-radius: 8px; border: 2px dashed #ddd;">
+                            <p style="color: #666; margin-bottom: 1rem;">📍 Interactive Map View</p>
+                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                <button onclick="window.open('https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}', '_blank')" 
+                                        style="background: #4285f4; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;">🗺️ Google Maps</button>
+                                <button onclick="window.open('https://www.openstreetmap.org/directions?from=${startLat}%2C${startLng}&to=${endLat}%2C${endLng}', '_blank')" 
+                                        style="background: #7ebc6f; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;">🌍 OpenStreetMap</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+                        <button onclick="window.open('https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}', '_blank')" 
+                                style="background: #4285f4; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">🚗 Get Directions</button>
+                        <button onclick="shareRoute('${startCity}', '${endCity}', ${startLat}, ${startLng}, ${endLat}, ${endLng})" 
+                                style="background: #25d366; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">📤 Share Route</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mapDisplay').innerHTML = mapHtml;
+        }
+        
+        function shareRoute(startCity, endCity, startLat, startLng, endLat, endLng) {
+            const routeText = `🚚 Optimized Route:\n📍 From: ${startCity} (${startLat.toFixed(4)}, ${startLng.toFixed(4)})\n🏁 To: ${endCity} (${endLat.toFixed(4)}, ${endLng.toFixed(4)})\n🗺️ View: https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Optimized Route',
+                    text: routeText
+                });
+            } else {
+                navigator.clipboard.writeText(routeText).then(() => {
+                    alert('📋 Route details copied to clipboard!');
+                });
+            }
+        }
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Load user profile
+        function loadUserProfile() {
+            const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            document.getElementById('employeeName').textContent = profile.name || 'Employee Name';
+            document.getElementById('employeeId').textContent = profile.id || 'EMP-001';
+            document.getElementById('companyName').textContent = profile.company || 'ABC Logistics';
+        }
+        
+        // Contact owner
+        function contactOwner() {
+            const phone = '+91-9876543210';
+            if (confirm(`Contact owner at ${phone}?`)) {
+                window.open(`tel:${phone}`);
+            }
+        }
+        
+        // Enhanced AI Assistant with API Integration
+        async function askAI() {
+            const question = document.getElementById('aiQuestion').value;
+            if (!question.trim()) {
+                alert('कृपया कोई सवाल पूछें / Please ask a question');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: center;">
+                    <div class="loading"></div>
+                    <p style="margin-top: 0.5rem;">AI सोच रहा है... / AI is thinking...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/ai_assistant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                if (data.type === 'emergency') {
+                    showEmergencyOptions(question, data);
+                } else {
+                    showNormalResponse(data);
+                }
+                
+            } catch (error) {
+                console.error('AI Error:', error);
+                document.getElementById('aiResponse').innerHTML = `
+                    <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <strong>❌ Error:</strong> AI service temporarily unavailable. Please try again.
+                    </div>
+                `;
+            }
+        }
+        
+        function showNormalResponse(data) {
+            let suggestionsHtml = '';
+            if (data.suggestions && data.suggestions.length > 0) {
+                suggestionsHtml = `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                        <h6>💡 Suggested Questions:</h6>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                            ${data.suggestions.map(suggestion => 
+                                `<button onclick="document.getElementById('aiQuestion').value='${suggestion}'; askAI();" 
+                                         style="background: #e3f2fd; color: #1976d2; border: 1px solid #1976d2; padding: 0.3rem 0.8rem; border-radius: 15px; cursor: pointer; font-size: 0.8rem;">
+                                    ${suggestion}
+                                </button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <strong>🤖 AI Assistant:</strong><br>${data.response}
+                    ${suggestionsHtml}
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                        <button onclick="showEmergencyContact()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">🚨 Emergency Contact</button>
+                        <button onclick="clearAIChat()" style="background: #6c757d; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem; margin-left: 0.5rem;">🗑️ Clear Chat</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function clearAIChat() {
+            document.getElementById('aiQuestion').value = '';
+            document.getElementById('aiResponse').innerHTML = '';
+        }
+        
+        function showEmergencyOptions(question, data) {
+            let actionsHtml = '';
+            if (data.actions) {
+                actionsHtml = data.actions.map(action => {
+                    const actionFunction = {
+                        'emergency_message': `sendEmergencyMessage('${question.replace(/'/g, "\\'")}')`,'emergency_call': 'callEmergencyNumber()',
+                        'share_location': 'shareLocation()',
+                        'request_backup': 'requestBackup()'
+                    }[action.type] || 'alert("Action not available")';
+                    
+                    const buttonColor = {
+                        'emergency_message': '#dc3545',
+                        'emergency_call': '#fd7e14',
+                        'share_location': '#6f42c1',
+                        'request_backup': '#20c997'
+                    }[action.type] || '#6c757d';
+                    
+                    return `
+                        <button onclick="${actionFunction}" 
+                            style="background: ${buttonColor}; color: white; border: none; padding: 0.8rem; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            ${action.label}
+                        </button>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+                    <h4 style="color: #856404; margin-bottom: 1rem;">🚨 Emergency Detected</h4>
+                    <p style="margin-bottom: 1rem;">${data.response}</p>
+                    
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${actionsHtml}
+                    </div>
+                    
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                        <h6>Quick Emergency Actions:</h6>
+                        <p style="font-size: 0.9rem; margin: 0.5rem 0;">• Your location will be automatically shared</p>
+                        <p style="font-size: 0.9rem; margin: 0.5rem 0;">• Owner will be notified immediately</p>
+                        <p style="font-size: 0.9rem; margin: 0.5rem 0;">• Emergency services can be contacted</p>
+                        <p style="font-size: 0.9rem; margin: 0.5rem 0;">• Response expected within 5-10 minutes</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function sendEmergencyMessage(originalMessage) {
+            const employeeId = document.getElementById('employeeId').textContent;
+            const employeeName = document.getElementById('employeeName').textContent;
+            const currentTime = new Date().toLocaleString();
+            
+            // Simulate sending message to owner
+            const emergencyData = {
+                type: 'EMERGENCY',
+                employeeId: employeeId,
+                employeeName: employeeName,
+                message: originalMessage,
+                timestamp: currentTime,
+                location: 'Current GPS Location', // In real app, get actual GPS
+                status: 'URGENT'
+            };
+            
+            // Store in localStorage (in real app, send to server)
+            const emergencyMessages = JSON.parse(localStorage.getItem('emergencyMessages') || '[]');
+            emergencyMessages.push(emergencyData);
+            localStorage.setItem('emergencyMessages', JSON.stringify(emergencyMessages));
+            
+            // Show confirmation
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #d4edda; border: 2px solid #28a745; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+                    <h4 style="color: #155724; margin-bottom: 1rem;">✅ Emergency Message Sent!</h4>
+                    <p><strong>To:</strong> Owner/Dispatch Center</p>
+                    <p><strong>From:</strong> ${employeeName} (${employeeId})</p>
+                    <p><strong>Time:</strong> ${currentTime}</p>
+                    <p><strong>Message:</strong> ${originalMessage}</p>
+                    <p><strong>Status:</strong> <span style="color: #dc3545; font-weight: bold;">URGENT - AWAITING RESPONSE</span></p>
+                    
+                    <div style="margin-top: 1rem; padding: 1rem; background: #fff; border-radius: 5px;">
+                        <p style="font-size: 0.9rem; color: #6c757d;">📡 Message sent via emergency channel</p>
+                        <p style="font-size: 0.9rem; color: #6c757d;">📍 Location automatically included</p>
+                        <p style="font-size: 0.9rem; color: #6c757d;">⏰ Expected response time: 5-10 minutes</p>
+                    </div>
+                    
+                    <button onclick="trackEmergencyStatus()" style="background: #007bff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 1rem;">📊 Track Response Status</button>
+                </div>
+            `;
+        }
+        
+        function callEmergencyNumber() {
+            if (confirm('Call Emergency Helpline: 1800-LOGISTICS?')) {
+                window.open('tel:1800568478427');
+            }
+        }
+        
+        function shareLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const locationUrl = `https://maps.google.com/?q=${lat},${lng}`;
+                    
+                    document.getElementById('aiResponse').innerHTML += `
+                        <div style="background: #cce5ff; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                            <p><strong>📍 Location Shared:</strong></p>
+                            <p>Latitude: ${lat.toFixed(6)}</p>
+                            <p>Longitude: ${lng.toFixed(6)}</p>
+                            <a href="${locationUrl}" target="_blank" style="color: #007bff;">View on Google Maps</a>
+                        </div>
+                    `;
+                });
+            } else {
+                alert('Location sharing not available on this device');
+            }
+        }
+        
+        function requestBackup() {
+            document.getElementById('aiResponse').innerHTML += `
+                <div style="background: #e2f7f0; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                    <p><strong>🚛 Backup Vehicle Requested</strong></p>
+                    <p>Request sent to dispatch center. ETA: 30-45 minutes</p>
+                    <p>Backup Vehicle ID: BKP-${Math.floor(Math.random() * 1000)}</p>
+                </div>
+            `;
+        }
+        
+        function trackEmergencyStatus() {
+            document.getElementById('aiResponse').innerHTML += `
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px; margin-top: 1rem; border-left: 4px solid #007bff;">
+                    <h6>📊 Emergency Response Status</h6>
+                    <div style="margin: 0.5rem 0;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Message Sent</span>
+                            <span style="color: #28a745;">✅ Complete</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Owner Notified</span>
+                            <span style="color: #28a745;">✅ Complete</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Response Pending</span>
+                            <span style="color: #ffc107;">⏳ In Progress</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showEmergencyContact() {
+            document.getElementById('aiResponse').innerHTML = `
+                <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+                    <h4 style="color: #856404;">🚨 Emergency Contact Options</h4>
+                    <div style="display: grid; gap: 0.5rem; margin-top: 1rem;">
+                        <button onclick="sendEmergencyMessage('Need immediate assistance')" style="background: #dc3545; color: white; border: none; padding: 0.8rem; border-radius: 5px; cursor: pointer;">📱 Message Owner</button>
+                        <button onclick="callEmergencyNumber()" style="background: #fd7e14; color: white; border: none; padding: 0.8rem; border-radius: 5px; cursor: pointer;">📞 Emergency Helpline</button>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+    
+    <!-- Modals -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3>👤 Profile Settings</h3>
+            <input type="text" id="profileName" placeholder="Full Name" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="text" id="profileId" placeholder="Employee ID" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="text" id="profileCompany" placeholder="Company Name" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="file" accept="image/*" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0;">
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="saveProfile()" class="btn">💾 Save Profile</button>
+                <button onclick="closeModal('profileModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <h3>🚛 Vehicle Details</h3>
+            <input type="text" id="vehicleNumber" placeholder="Vehicle Number (e.g., MH12AB1234)" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <select id="vehicleType" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="">Select Vehicle Type</option>
+                <option value="truck">Truck</option>
+                <option value="mini-truck">Mini Truck</option>
+                <option value="trailer">Trailer</option>
+            </select>
+            <input type="date" id="journeyDate" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="saveVehicle()" class="btn">💾 Save Vehicle Info</button>
+                <button onclick="closeModal('vehicleModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="documentsModal" class="modal">
+        <div class="modal-content">
+            <h3>📄 Government Documents</h3>
+            <div style="margin: 1rem 0;">
+                <label>Driving License:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>Aadhar Card:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>PAN Card:</label>
+                <input type="file" accept="image/*,.pdf" style="width: 100%; padding: 0.5rem; margin: 0.3rem 0;">
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="saveDocuments()" class="btn">💾 Upload Documents</button>
+                <button onclick="closeModal('documentsModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="aiModal" class="modal">
+        <div class="modal-content">
+            <h3>🤖 AI Assistant</h3>
+            <p>Ask me anything about route optimization, fuel efficiency, or logistics!</p>
+            <textarea id="aiQuestion" placeholder="Type your question here..." style="width: 100%; height: 100px; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; margin: 1rem 0;"></textarea>
+            <div id="aiResponse"></div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="askAI()" class="btn">🚀 Ask AI</button>
+                <button onclick="closeModal('aiModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="pricingModal" class="modal">
+        <div class="modal-content">
+            <h3>💰 Get Price Quote</h3>
+            <select id="empPriceOrigin" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="Delhi">Delhi</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Chennai">Chennai</option>
+            </select>
+            <select id="empPriceDestination" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Pune">Pune</option>
+            </select>
+            <input type="number" id="empPriceWeight" placeholder="Load Weight (kg)" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <select id="empUrgency" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="normal">Normal Delivery</option>
+                <option value="express">Express Delivery</option>
+                <option value="urgent">Urgent Delivery</option>
+            </select>
+            <div id="empQuoteResult"></div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="generateEmployeeQuote()" class="btn">💰 Generate Quote</button>
+                <button onclick="closeModal('pricingModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="maintenanceModal" class="modal">
+        <div class="modal-content">
+            <h3>🔧 Vehicle Health Check</h3>
+            <p>Check your assigned vehicle's maintenance status</p>
+            <input type="text" id="vehicleNumber" placeholder="Enter Vehicle Number (e.g., DL-01-1234)" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+            <div id="vehicleHealthResult"></div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="checkVehicleHealth()" class="btn">🔍 Check Health</button>
+                <button onclick="closeModal('maintenanceModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin-left: 1rem;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Route History Modal -->
+    <div id="routeHistoryModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <h3>🗺️ Route History</h3>
+            <div id="routeHistoryContent">
+                <div style="text-align: center; padding: 2rem;">
+                    <p>Loading route history...</p>
+                    <div class="loading"></div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="loadRouteHistory()" style="background: #3498db; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin: 0.5rem;">🔄 Refresh</button>
+                <button onclick="exportRouteHistory()" style="background: #28a745; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin: 0.5rem;">📊 Export</button>
+                <button onclick="closeModal('routeHistoryModal')" style="background: #95a5a6; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; margin: 0.5rem;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function saveProfile() {
+            const profile = {
+                name: document.getElementById('profileName').value,
+                id: document.getElementById('profileId').value,
+                company: document.getElementById('profileCompany').value
+            };
+            localStorage.setItem('userProfile', JSON.stringify(profile));
+            loadUserProfile();
+            closeModal('profileModal');
+            alert('Profile saved successfully!');
+        }
+        
+        function saveVehicle() {
+            const vehicle = {
+                number: document.getElementById('vehicleNumber').value,
+                type: document.getElementById('vehicleType').value,
+                date: document.getElementById('journeyDate').value
+            };
+            localStorage.setItem('vehicleInfo', JSON.stringify(vehicle));
+            closeModal('vehicleModal');
+            alert('Vehicle information saved!');
+        }
+        
+        function saveDocuments() {
+            closeModal('documentsModal');
+            alert('Documents uploaded successfully!');
+        }
+        
+        function generateEmployeeQuote() {
+            const origin = document.getElementById('empPriceOrigin').value;
+            const destination = document.getElementById('empPriceDestination').value;
+            const weight = document.getElementById('empPriceWeight').value;
+            const urgency = document.getElementById('empUrgency').value;
+            
+            if (!weight) {
+                alert('Please enter load weight');
+                return;
+            }
+            
+            const distance = {'Delhi-Mumbai': 1400, 'Mumbai-Delhi': 1400, 'Delhi-Chennai': 2200};
+            const dist = distance[`${origin}-${destination}`] || 1000;
+            
+            const urgencyMultiplier = {'normal': 1.0, 'express': 1.2, 'urgent': 1.5};
+            const basePrice = (dist * 8.5 + (dist/50) * 150 + dist * 3.2) * (1 + weight/10000);
+            const finalPrice = basePrice * urgencyMultiplier[urgency] * 1.25 * 1.18;
+            
+            const deliveryTime = {
+                'normal': '24-48 hours',
+                'express': '12-24 hours', 
+                'urgent': '6-12 hours'
+            };
+            
+            document.getElementById('empQuoteResult').innerHTML = `
+                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <h6>💰 Your Quote</h6>
+                    <p><strong>Route:</strong> ${origin} → ${destination}</p>
+                    <p><strong>Distance:</strong> ${dist} km</p>
+                    <p><strong>Load:</strong> ${weight} kg</p>
+                    <p><strong>Service:</strong> ${urgency.charAt(0).toUpperCase() + urgency.slice(1)}</p>
+                    <p><strong>Delivery Time:</strong> ${deliveryTime[urgency]}</p>
+                    <hr style="margin: 0.5rem 0;">
+                    <p style="font-size: 1.2rem; font-weight: bold; color: #27ae60;"><strong>Total Price:</strong> ₹${finalPrice.toFixed(0)}</p>
+                    <p style="font-size: 0.8rem; color: #666;">*All taxes included</p>
+                    <button onclick="shareQuoteWithCustomer()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">📤 Share with Customer</button>
+                </div>
+            `;
+        }
+        
+        function checkVehicleHealth() {
+            const vehicleNum = document.getElementById('vehicleNumber').value;
+            
+            if (!vehicleNum) {
+                alert('Please enter vehicle number');
+                return;
+            }
+            
+            // Simulate vehicle health data
+            const healthData = {
+                'DL-01-1234': {score: 25, alerts: ['Engine Oil - Critical', 'Brake Pads - High']},
+                'MH-02-5678': {score: 75, alerts: ['Tire Pressure - Medium']},
+                'KA-03-9012': {score: 90, alerts: []}
+            };
+            
+            const health = healthData[vehicleNum] || {score: 85, alerts: ['Regular maintenance due']};
+            
+            document.getElementById('vehicleHealthResult').innerHTML = `
+                <div style="background: ${health.score < 50 ? '#ffebee' : health.score < 80 ? '#fff3e0' : '#e8f5e8'}; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <h6>🚛 Vehicle: ${vehicleNum}</h6>
+                    <div style="display: flex; align-items: center; margin: 1rem 0;">
+                        <div style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(${health.score < 50 ? '#e74c3c' : health.score < 80 ? '#f39c12' : '#27ae60'} ${health.score * 3.6}deg, #ecf0f1 0deg); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                            ${health.score}%
+                        </div>
+                        <div style="margin-left: 1rem;">
+                            <h6>Health Score: ${health.score}%</h6>
+                            <p style="color: ${health.score < 50 ? '#e74c3c' : health.score < 80 ? '#f39c12' : '#27ae60'}; font-weight: bold;">
+                                ${health.score < 50 ? 'Needs Immediate Attention' : health.score < 80 ? 'Maintenance Required' : 'Good Condition'}
+                            </p>
+                        </div>
+                    </div>
+                    ${health.alerts.length > 0 ? `
+                        <div>
+                            <h6>⚠️ Alerts:</h6>
+                            ${health.alerts.map(alert => `<p style="margin: 0.2rem 0; color: #e74c3c;">• ${alert}</p>`).join('')}
+                        </div>
+                    ` : '<p style="color: #27ae60;">✓ No maintenance alerts</p>'}
+                    ${health.score < 80 ? '<button onclick="requestMaintenance()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">🔧 Request Service</button>' : ''}
+                </div>
+            `;
+        }
+        
+        function shareQuoteWithCustomer() {
+            alert('📤 Quote shared with customer via WhatsApp/SMS!');
+        }
+        
+        function requestMaintenance() {
+            alert('🔧 Maintenance request sent to fleet manager!\n\nYou will receive confirmation within 2 hours.');
+        }
+        
+        function loadRouteHistory() {
+            const routeHistory = JSON.parse(localStorage.getItem('routeHistory') || '[]');
+            
+            if (routeHistory.length === 0) {
+                document.getElementById('routeHistoryContent').innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="color: #666;">No routes planned yet!</p>
+                        <p style="font-size: 0.9rem;">Start planning routes to see your history here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let historyHtml = '<div style="display: grid; gap: 1rem; max-height: 400px; overflow-y: auto;">';
+            
+            routeHistory.reverse().forEach((route, index) => {
+                const routeIndex = routeHistory.length - index;
+                historyHtml += `
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #3498db;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h6>Route ${routeIndex}: ${route.from} → ${route.to}</h6>
+                            <span style="background: #28a745; color: white; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.8rem;">Completed</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+                            <div>
+                                <p><strong>Date:</strong> ${route.date}</p>
+                                <p><strong>Distance:</strong> ${route.distance} km</p>
+                            </div>
+                            <div>
+                                <p><strong>Carbon:</strong> ${route.carbon} kg CO₂</p>
+                                <p><strong>Efficiency:</strong> ${(Math.random() * 20 + 80).toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <button onclick="viewRouteOnMap('${route.from}', '${route.to}')" style="background: #3498db; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-right: 0.5rem;">🗺️ View Map</button>
+                            <button onclick="shareRoute('${route.from}', '${route.to}')" style="background: #28a745; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">📤 Share</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            historyHtml += '</div>';
+            document.getElementById('routeHistoryContent').innerHTML = historyHtml;
+        }
+        
+        function viewRouteOnMap(fromCity, toCity) {
+            const fromCoords = getCityCoords(fromCity);
+            const toCoords = getCityCoords(toCity);
+            const url = `https://www.google.com/maps/dir/${fromCoords[0]},${fromCoords[1]}/${toCoords[0]},${toCoords[1]}`;
+            window.open(url, '_blank');
+        }
+        
+        function exportRouteHistory() {
+            const routeHistory = JSON.parse(localStorage.getItem('routeHistory') || '[]');
+            
+            if (routeHistory.length === 0) {
+                alert('No route history to export!');
+                return;
+            }
+            
+            const csvHeader = 'Route,From,To,Date,Distance (km),Carbon (kg CO2)\n';
+            const csvContent = routeHistory.map((route, index) => 
+                `Route ${index + 1},${route.from},${route.to},${route.date},${route.distance},${route.carbon}`
+            ).join('\n');
+            
+            const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `route_history_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert('📊 Route history exported successfully!');
+        }
+        
+        // Auto-load route history when modal opens
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            if (modalId === 'routeHistoryModal') {
+                loadRouteHistory();
+            }
+        }
+        
+
+    </script>
+    <script src="{{ url_for('static', filename='js/dashboard-common.js') }}"></script>
+</body>
+</html>

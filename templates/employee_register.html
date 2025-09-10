@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Registration - Carbon Footprint Optimizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .register-container { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px); 
+            padding: 2.5rem; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 500px; 
+            border: 1px solid rgba(255,255,255,0.2); 
+        }
+        .logo { 
+            text-align: center; 
+            margin-bottom: 2rem; 
+        }
+        .logo h1 { 
+            color: #333; 
+            margin-bottom: 0.5rem; 
+            font-size: 2rem; 
+        }
+        .logo p { 
+            color: #666; 
+            font-size: 1rem; 
+        }
+        .form-group { 
+            margin-bottom: 1.5rem; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 600; 
+            color: #333; 
+        }
+        input, textarea { 
+            width: 100%; 
+            padding: 0.9rem; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            transition: all 0.3s; 
+            background: rgba(255,255,255,0.9); 
+        }
+        input:focus, textarea:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1); 
+            transform: translateY(-2px); 
+        }
+        textarea { 
+            resize: vertical; 
+            min-height: 80px; 
+        }
+        .btn { 
+            width: 100%; 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            padding: 1rem; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-top: 1rem; 
+            transition: all 0.3s; 
+        }
+        .btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4); 
+        }
+        .login-link { 
+            text-align: center; 
+            margin-top: 1.5rem; 
+        }
+        .login-link a { 
+            color: #667eea; 
+            text-decoration: none; 
+            font-weight: 600; 
+        }
+        .login-link a:hover { 
+            text-decoration: underline; 
+        }
+        .flash-messages { 
+            margin-bottom: 1.5rem; 
+        }
+        .flash-message { 
+            padding: 1rem; 
+            border-radius: 10px; 
+            margin-bottom: 0.5rem; 
+            font-weight: 500; 
+        }
+        .flash-error { 
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52); 
+            color: white; 
+        }
+        .flash-success { 
+            background: linear-gradient(135deg, #51cf66, #40c057); 
+            color: white; 
+        }
+        .required { 
+            color: #e74c3c; 
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 768px) {
+            .register-container { 
+                margin: 1rem; 
+                padding: 2rem; 
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <h1>👨💼 Employee Registration</h1>
+            <p>Join your company's logistics team</p>
+        </div>
+        
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="flash-message {% if 'Error' in message or 'not found' in message %}flash-error{% else %}flash-success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="company_name">Company Name <span class="required">*</span></label>
+                <input type="text" id="company_name" name="company_name" placeholder="Enter your company name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="employee_name">Full Name <span class="required">*</span></label>
+                <input type="text" id="employee_name" name="employee_name" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter phone number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="license_number">License Number</label>
+                    <input type="text" id="license_number" name="license_number" placeholder="Driving license number">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="aadhar_number">Aadhar Number</label>
+                <input type="text" id="aadhar_number" name="aadhar_number" placeholder="Aadhar card number">
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" name="address" placeholder="Enter your complete address"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password <span class="required">*</span></label>
+                <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+            </div>
+            
+            <button type="submit" class="btn">🚀 Register as Employee</button>
+        </form>
+        
+        <div class="login-link">
+            <p>Already have an Employee ID? <a href="{{ url_for('employee_auth') }}">Login here</a></p>
+            <p><a href="{{ url_for('home') }}">← Back to Home</a></p>
+        </div>
+    </div>
+</body>
+</html>
