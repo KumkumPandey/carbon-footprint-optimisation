@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Login - Carbon Optimizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 0.5rem;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background: #11998e;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #11998e;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .hidden { display: none; }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="auth-container">
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="showTab('login')">Login</button>
+                <button class="tab-btn" onclick="showTab('register')">Register</button>
+            </div>
+            
+            <div class="success-message" id="successMessage"></div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <h2 style="margin-bottom: 2rem; text-align: center; color: #333;">👨💼 Employee Login</h2>
+                
+                <div class="form-group">
+                    <label for="loginEmployeeId">Employee ID</label>
+                    <input type="text" id="loginEmployeeId" placeholder="e.g., EMP-ABC-001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">🚀 Login</button>
+            </form>
+            
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form hidden">
+                <h2 style="margin-bottom: 2rem; text-align: center; color: #333;">👨💼 Employee Registration</h2>
+                
+                <div class="form-group">
+                    <label for="companyName">Company Name</label>
+                    <input type="text" id="companyName" placeholder="Enter your company name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employeeName">Employee Name</label>
+                    <input type="text" id="employeeName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="licenseNumber">Driving License Number</label>
+                    <input type="text" id="licenseNumber">
+                </div>
+                
+                <div class="form-group">
+                    <label for="aadharNumber">Aadhar Number</label>
+                    <input type="text" id="aadharNumber">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">👨💼 Register Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabs[0].classList.add('active');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                tabs[1].classList.add('active');
+            }
+        }
+        
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const employeeId = document.getElementById('loginEmployeeId').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (employeeId && password) {
+                localStorage.setItem('userType', 'employee');
+                localStorage.setItem('employeeId', employeeId);
+                
+                showSuccess('Login successful! Redirecting to dashboard...');
+                setTimeout(() => {
+                    window.location.href = 'employee-dashboard.html';
+                }, 2000);
+            } else {
+                alert('Please fill all fields');
+            }
+        });
+        
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const companyName = document.getElementById('companyName').value;
+            const employeeName = document.getElementById('employeeName').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            
+            if (companyName && employeeName && phone && password) {
+                // Generate employee ID
+                const companyCode = companyName.substring(0, 3).toUpperCase();
+                const employeeId = `EMP-${companyCode}-${Date.now().toString().slice(-3)}`;
+                
+                localStorage.setItem('userType', 'employee');
+                localStorage.setItem('employeeId', employeeId);
+                localStorage.setItem('employeeName', employeeName);
+                localStorage.setItem('companyName', companyName);
+                
+                showSuccess(`Employee registered successfully!<br>Employee ID: ${employeeId}<br>Company: ${companyName}<br>Redirecting to dashboard...`);
+                setTimeout(() => {
+                    window.location.href = 'employee-dashboard.html';
+                }, 3000);
+            } else {
+                alert('Please fill required fields');
+            }
+        });
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.innerHTML = message;
+            successDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

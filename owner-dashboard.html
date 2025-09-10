@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - Carbon Optimizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+        .dashboard-container {
+            margin-top: 120px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            color: white;
+            text-align: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .section h3 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .table th, .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.idle {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span>🌱</span>
+                <span>Smart Carbon Optimizer</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#dashboard">🏠 Dashboard</a></li>
+                <li><a href="#fleet">🚛 Fleet</a></li>
+                <li><a href="#analytics">📊 Analytics</a></li>
+                <li><a href="#tracking">📍 Tracking</a></li>
+                <li><a href="index.html" class="logout-btn">🚪 Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h2>🏢 Welcome to Owner Dashboard</h2>
+            <p id="welcomeText">Manage your fleet, track performance, and optimize operations</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">🚛</span>
+                <div class="stat-value" id="totalVehicles">12</div>
+                <div class="stat-label">Total Vehicles</div>
+                <button class="btn btn-primary" onclick="showSection('fleet')">Manage Fleet</button>
+            </div>
+            
+            <div class="stat-card">
+                <span class="stat-icon">👨💼</span>
+                <div class="stat-value" id="totalEmployees">25</div>
+                <div class="stat-label">Active Employees</div>
+                <button class="btn btn-primary" onclick="showSection('employees')">View Employees</button>
+            </div>
+            
+            <div class="stat-card">
+                <span class="stat-icon">🌱</span>
+                <div class="stat-value" id="carbonSaved">1,250 kg</div>
+                <div class="stat-label">CO₂ Saved This Month</div>
+                <button class="btn btn-primary" onclick="showSection('analytics')">View Analytics</button>
+            </div>
+            
+            <div class="stat-card">
+                <span class="stat-icon">📈</span>
+                <div class="stat-value" id="efficiency">87%</div>
+                <div class="stat-label">Fleet Efficiency</div>
+                <button class="btn btn-primary" onclick="showSection('tracking')">Live Tracking</button>
+            </div>
+        </div>
+
+        <div id="fleet" class="section">
+            <h3>🚛 Fleet Management</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Vehicle ID</th>
+                        <th>Driver</th>
+                        <th>Current Location</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody id="fleetTable">
+                    <tr>
+                        <td>DL-01-1234</td>
+                        <td>Raj Kumar</td>
+                        <td>New Delhi</td>
+                        <td><span class="status active">Active</span></td>
+                        <td>2 min ago</td>
+                    </tr>
+                    <tr>
+                        <td>MH-02-5678</td>
+                        <td>Amit Singh</td>
+                        <td>Mumbai</td>
+                        <td><span class="status idle">Idle</span></td>
+                        <td>15 min ago</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tracking" class="section">
+            <h3>📍 Live Employee Tracking</h3>
+            <div id="trackingData">
+                <p>Loading tracking data...</p>
+            </div>
+        </div>
+
+        <div id="analytics" class="section">
+            <h3>📊 Performance Analytics</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 15px;">
+                    <h4>🌱 Environmental Impact</h4>
+                    <p>CO₂ Reduction: <strong>30%</strong></p>
+                    <p>Fuel Saved: <strong>15%</strong></p>
+                </div>
+                <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 15px;">
+                    <h4>🚛 Fleet Performance</h4>
+                    <p>On-time Delivery: <strong>92%</strong></p>
+                    <p>Route Optimization: <strong>95%</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load user data
+        document.addEventListener('DOMContentLoaded', function() {
+            const companyName = localStorage.getItem('companyName') || 'Your Company';
+            const userId = localStorage.getItem('userId') || localStorage.getItem('ownerId') || 'Owner';
+            
+            document.getElementById('welcomeText').textContent = `Welcome ${userId} from ${companyName}! Manage your fleet and track performance.`;
+            
+            // Load tracking data
+            loadTrackingData();
+            
+            // Update stats periodically
+            setInterval(updateStats, 30000);
+        });
+        
+        function showSection(sectionId) {
+            // Simple navigation - in real app would show/hide sections
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function loadTrackingData() {
+            // Simulate loading tracking data
+            const trackingDiv = document.getElementById('trackingData');
+            
+            setTimeout(() => {
+                trackingDiv.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                        <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px;">
+                            <h4>EMP-ABC-001</h4>
+                            <p><strong>Vehicle:</strong> DL-01-1234</p>
+                            <p><strong>Status:</strong> In Transit</p>
+                            <p><strong>Location:</strong> 28.7041, 77.1025</p>
+                            <p><strong>Updated:</strong> 2 min ago</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px;">
+                            <h4>EMP-ABC-002</h4>
+                            <p><strong>Vehicle:</strong> MH-02-5678</p>
+                            <p><strong>Status:</strong> Completed</p>
+                            <p><strong>Location:</strong> 19.0760, 72.8777</p>
+                            <p><strong>Updated:</strong> 15 min ago</p>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
+        function updateStats() {
+            // Simulate real-time stat updates
+            const vehicles = Math.floor(Math.random() * 5) + 10;
+            const employees = Math.floor(Math.random() * 10) + 20;
+            const carbon = Math.floor(Math.random() * 500) + 1000;
+            const efficiency = Math.floor(Math.random() * 10) + 85;
+            
+            document.getElementById('totalVehicles').textContent = vehicles;
+            document.getElementById('totalEmployees').textContent = employees;
+            document.getElementById('carbonSaved').textContent = carbon + ' kg';
+            document.getElementById('efficiency').textContent = efficiency + '%';
+        }
+    </script>
+</body>
+</html>

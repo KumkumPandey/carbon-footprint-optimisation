@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Carbon Optimizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #11998e;
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            background: #11998e;
+            color: white;
+        }
+        .dashboard-container {
+            margin-top: 120px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            color: white;
+            text-align: center;
+        }
+        .route-planner {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 25px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #11998e;
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 2rem auto;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+        }
+        .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 25px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+            display: none;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .result-card {
+            background: rgba(255,255,255,0.8);
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 4px solid #11998e;
+        }
+        .result-card h4 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        .tracking-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 25px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+        }
+        .location-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span>🌱</span>
+                <span>Smart Carbon Optimizer</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#dashboard">🏠 Dashboard</a></li>
+                <li><a href="#routes">🗺️ Routes</a></li>
+                <li><a href="#tracking">📍 Tracking</a></li>
+                <li><a href="index.html" class="logout-btn">🚪 Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h2>👨💼 Welcome to Employee Dashboard</h2>
+            <p id="welcomeText">Plan routes, track your trips, and contribute to a greener future</p>
+        </div>
+
+        <div class="route-planner">
+            <h2>🗺️ Plan Your Optimized Route</h2>
+            
+            <form id="routeForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="date">📅 Journey Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userId">👤 Employee ID</label>
+                        <input type="text" id="userId" name="userId" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="startCity">📍 From City</label>
+                        <select id="startCity" name="startCity" required>
+                            <option value="">Select start city</option>
+                            <option value="Delhi">New Delhi</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Kolkata">Kolkata</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endCity">🏙️ To City</label>
+                        <select id="endCity" name="endCity" required>
+                            <option value="">Select destination</option>
+                            <option value="Delhi">New Delhi</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Kolkata">Kolkata</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loadWeight">📦 Load Weight (kg)</label>
+                    <input type="number" id="loadWeight" name="loadWeight" placeholder="Enter load weight" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">🔍 Find Optimized Route</button>
+            </form>
+        </div>
+
+        <div id="resultsSection" class="results-section">
+            <h3>✅ Route Optimization Results</h3>
+            <div id="routeDetails" class="results-grid"></div>
+        </div>
+
+        <div class="tracking-section">
+            <h2>📍 Location Tracking</h2>
+            <p>Share your current location with the owner for real-time tracking</p>
+            
+            <form id="locationForm" class="location-form">
+                <div class="form-group">
+                    <label for="currentLocation">📍 Current Location</label>
+                    <input type="text" id="currentLocation" placeholder="Auto-detected location" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vehicleNumber">🚛 Vehicle Number</label>
+                    <input type="text" id="vehicleNumber" placeholder="Enter vehicle number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tripStatus">🚦 Trip Status</label>
+                    <select id="tripStatus" required>
+                        <option value="">Select status</option>
+                        <option value="started">Trip Started</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Trip Completed</option>
+                        <option value="delayed">Delayed</option>
+                    </select>
+                </div>
+            </form>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="button" class="btn-secondary" onclick="getCurrentLocation()">📍 Get Current Location</button>
+                <button type="button" class="btn-primary" onclick="submitLocation()">📤 Send to Owner</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            const employeeId = localStorage.getItem('employeeId') || 'EMP-001';
+            const employeeName = localStorage.getItem('employeeName') || 'Employee';
+            const companyName = localStorage.getItem('companyName') || 'Company';
+            
+            document.getElementById('userId').value = employeeId;
+            document.getElementById('welcomeText').textContent = `Welcome ${employeeName} (${employeeId}) from ${companyName}!`;
+            document.getElementById('date').valueAsDate = new Date();
+        });
+        
+        // Route form submission
+        document.getElementById('routeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const startCity = document.getElementById('startCity').value;
+            const endCity = document.getElementById('endCity').value;
+            const loadWeight = document.getElementById('loadWeight').value;
+            
+            if (!startCity || !endCity || !loadWeight) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if (startCity === endCity) {
+                alert('Start and end cities cannot be the same');
+                return;
+            }
+            
+            // Simulate route optimization
+            const distances = {
+                'Delhi-Mumbai': 1400, 'Delhi-Bangalore': 2150, 'Delhi-Chennai': 2180,
+                'Delhi-Kolkata': 1470, 'Mumbai-Bangalore': 980, 'Mumbai-Chennai': 1340,
+                'Mumbai-Kolkata': 2000, 'Bangalore-Chennai': 350, 'Bangalore-Kolkata': 1870,
+                'Chennai-Kolkata': 1670
+            };
+            
+            const routeKey = `${startCity}-${endCity}`;
+            const reverseKey = `${endCity}-${startCity}`;
+            const distance = distances[routeKey] || distances[reverseKey] || 1000;
+            
+            // Calculate metrics
+            const baseCarbonPerKm = 0.8;
+            const loadFactor = 1 + (parseFloat(loadWeight) / 10000);
+            const carbonFootprint = (distance * baseCarbonPerKm * loadFactor).toFixed(2);
+            const fuelRequired = (distance / 12).toFixed(2); // 12 km/L efficiency
+            const estimatedTime = Math.round(distance / 60);
+            
+            // Display results
+            document.getElementById('routeDetails').innerHTML = `
+                <div class="result-card">
+                    <h4>🗺️ Route Details</h4>
+                    <p><strong>Distance:</strong> ${distance} km</p>
+                    <p><strong>Route:</strong> ${startCity} → ${endCity}</p>
+                    <p><strong>Load:</strong> ${loadWeight} kg</p>
+                    <p><strong>Est. Time:</strong> ${estimatedTime} hours</p>
+                </div>
+                
+                <div class="result-card">
+                    <h4>🌱 Environmental Impact</h4>
+                    <p><strong>CO₂ Emissions:</strong> ${carbonFootprint} kg</p>
+                    <p><strong>Fuel Required:</strong> ${fuelRequired} L</p>
+                    <p style="color: #11998e; font-weight: bold;">✨ Route optimized for minimal impact!</p>
+                </div>
+                
+                <div class="result-card">
+                    <h4>💰 Cost Analysis</h4>
+                    <p><strong>Fuel Cost:</strong> ₹${(fuelRequired * 100).toFixed(0)}</p>
+                    <p><strong>Toll Estimate:</strong> ₹${Math.round(distance * 2)}</p>
+                    <p><strong>Total Estimate:</strong> ₹${(fuelRequired * 100 + distance * 2).toFixed(0)}</p>
+                </div>
+            `;
+            
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Location functions
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lng = position.coords.longitude.toFixed(6);
+                    document.getElementById('currentLocation').value = `${lat}, ${lng}`;
+                }, function(error) {
+                    alert('Location access denied. Please enable location services.');
+                });
+            } else {
+                alert('Geolocation not supported by this browser.');
+            }
+        }
+        
+        function submitLocation() {
+            const location = document.getElementById('currentLocation').value;
+            const vehicle = document.getElementById('vehicleNumber').value;
+            const status = document.getElementById('tripStatus').value;
+            
+            if (!location || !vehicle || !status) {
+                alert('Please fill all fields and get current location');
+                return;
+            }
+            
+            // Simulate sending to owner
+            const trackingData = {
+                employeeId: document.getElementById('userId').value,
+                location: location,
+                vehicle: vehicle,
+                status: status,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Store in localStorage (in real app would send to server)
+            let trackingHistory = JSON.parse(localStorage.getItem('trackingHistory') || '[]');
+            trackingHistory.push(trackingData);
+            localStorage.setItem('trackingHistory', JSON.stringify(trackingHistory));
+            
+            alert('✅ Location sent to owner dashboard successfully!');
+            
+            // Clear form
+            document.getElementById('vehicleNumber').value = '';
+            document.getElementById('tripStatus').value = '';
+            document.getElementById('currentLocation').value = '';
+        }
+    </script>
+</body>
+</html>
